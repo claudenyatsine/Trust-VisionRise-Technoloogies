@@ -1,0 +1,52 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero-cctv",
+      "description": "Modern high-tech CCTV camera system",
+      "imageUrl": "https://picsum.photos/seed/guardian1/1200/800",
+      "imageHint": "security camera"
+    },
+    {
+      "id": "service-residential",
+      "description": "Home security installation",
+      "imageUrl": "https://picsum.photos/seed/guardian2/600/400",
+      "imageHint": "smart home"
+    },
+    {
+      "id": "service-commercial",
+      "description": "Enterprise surveillance room",
+      "imageUrl": "https://picsum.photos/seed/guardian3/600/400",
+      "imageHint": "control room"
+    },
+    {
+      "id": "service-maintenance",
+      "description": "Technician repairing a camera",
+      "imageUrl": "https://picsum.photos/seed/guardian4/600/400",
+      "imageHint": "technician security"
+    },
+    {
+      "id": "about-team",
+      "description": "Professional security installation team",
+      "imageUrl": "https://picsum.photos/seed/guardian5/800/600",
+      "imageHint": "professional team"
+    },
+    {
+      "id": "portfolio-warehouse",
+      "description": "Large scale warehouse surveillance",
+      "imageUrl": "https://picsum.photos/seed/port1/800/600",
+      "imageHint": "industrial warehouse"
+    },
+    {
+      "id": "portfolio-retail",
+      "description": "Retail shop security system",
+      "imageUrl": "https://picsum.photos/seed/port2/800/600",
+      "imageHint": "retail store"
+    },
+    {
+      "id": "portfolio-estate",
+      "description": "Luxury estate perimeter security",
+      "imageUrl": "https://picsum.photos/seed/port3/800/600",
+      "imageHint": "luxury mansion"
+    }
+  ]
+}
