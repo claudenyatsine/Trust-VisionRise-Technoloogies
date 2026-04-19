@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Hero } from "@/components/Hero";
+import { Offerings } from "@/components/Offerings";
 import { Services } from "@/components/Services";
 import { Portfolio } from "@/components/Portfolio";
 import { AIExplainer } from "@/components/AIExplainer";
@@ -12,6 +13,7 @@ export default function Home() {
       <Navigation />
       <main className="flex-grow">
         <Hero />
+        <Offerings />
         <Services />
         <Portfolio />
         

@@ -1,7 +1,6 @@
 import { Mail, Phone, MapPin, Facebook, Twitter, Linkedin } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import Logo from "@/components/resources/svg/logo.svg";
 
 export function Footer() {
   return (
@@ -11,11 +10,11 @@ export function Footer() {
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-3">
               <Image 
-                src={Logo} 
+                src="/logo.png" 
                 alt="Trust-VisionRise Technologies Logo" 
-                width={32} 
-                height={32}
-                className="h-8 w-8"
+                width={40} 
+                height={40}
+                className="h-10 w-10 object-contain"
               />
               <span className="font-headline font-bold text-xl tracking-tight text-[#01357D] uppercase">
                 TRUST-VISIONRISE
