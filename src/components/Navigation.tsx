@@ -3,86 +3,104 @@
 import * as React from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Menu, X, Phone } from "lucide-react";
+import { 
+  Phone, 
+  Home, 
+  Package, 
+  Shield, 
+  SquareLibrary, 
+  MessageSquare,
+  Info
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function Navigation() {
-  const [isOpen, setIsOpen] = React.useState(false);
-
   const navLinks = [
-    { name: "Services", href: "#services" },
-    { name: "Portfolio", href: "#portfolio" },
-    { name: "About", href: "/about" },
-    { name: "Contact", href: "/contact" },
+    { name: "Home", href: "/", icon: Home },
+    { name: "Products", href: "#products", icon: Package },
+    { name: "Services", href: "#services", icon: Shield },
+    { name: "Portfolio", href: "#portfolio", icon: SquareLibrary },
+    { name: "Contact", href: "/contact", icon: MessageSquare },
   ];
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-20 items-center">
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center gap-3">
-              <Image
-                src="/logo.png"
-                alt="Trust-VisionRise Technologies Logo"
-                width={40}
-                height={40}
-                className="h-10 w-10 object-contain"
-              />
-              <span className="font-headline font-bold text-xl tracking-tight text-[#01357D] leading-tight uppercase">
-                TRUST-VISIONRISE<br/><span className="text-[#01357D]/80 text-sm">TECHNOLOGIES</span>
-              </span>
-            </Link>
-          </div>
-
-          <div className="hidden md:flex items-center space-x-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-sm font-bold uppercase tracking-wider text-[#01357D] hover:opacity-70 transition-opacity"
-              >
-                {link.name}
+    <>
+      {/* Desktop Navigation */}
+      <nav className="fixed top-0 w-full z-50 bg-background/95 backdrop-blur-md border-b border-border shadow-sm hidden md:block">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-20 items-center">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center gap-3">
+                <Image
+                  src="/logo.png"
+                  alt="Trust-VisionRise Technologies Logo"
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 object-contain"
+                />
+                <span className="font-headline font-bold text-xl tracking-tight text-[#01357D] leading-tight uppercase text-left">
+                  TRUST-VISIONRISE<br/><span className="text-[#01357D]/80 text-sm">TECHNOLOGIES</span>
+                </span>
               </Link>
-            ))}
-            <Button variant="default" className="gap-2 font-bold uppercase tracking-wider bg-[#01357D] text-white shadow-lg hover:shadow-xl transition-shadow">
-              <Phone className="h-4 w-4" />
-              Get Quote
-            </Button>
-          </div>
+            </div>
 
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-[#01357D]"
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            <div className="flex items-center space-x-8">
+              {navLinks.slice(1).map((link) => (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-sm font-bold uppercase tracking-wider text-[#01357D] hover:opacity-70 transition-opacity"
+                >
+                  {link.name}
+                </Link>
+              ))}
+              <Button variant="default" className="gap-2 font-bold uppercase tracking-wider bg-[#01357D] text-white shadow-lg hover:shadow-xl transition-shadow">
+                <Phone className="h-4 w-4" />
+                Get Quote
+              </Button>
+            </div>
           </div>
         </div>
+      </nav>
+
+      {/* Mobile Top Header (Logo only) */}
+      <div className="md:hidden fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-border py-4 px-6 flex justify-between items-center shadow-sm">
+        <Link href="/" className="flex items-center gap-2">
+          <Image
+            src="/logo.png"
+            alt="Logo"
+            width={32}
+            height={32}
+            className="h-8 w-8 object-contain"
+          />
+          <span className="font-headline font-bold text-base tracking-tight text-[#01357D] uppercase">
+            Trust-VisionRise
+          </span>
+        </Link>
+        <Button size="sm" className="bg-[#01357D] rounded-full h-9 w-9 p-0 flex items-center justify-center">
+          <Phone className="h-4 w-4 text-white" />
+        </Button>
       </div>
 
-      <div
-        className={cn(
-          "md:hidden absolute w-full bg-background border-b border-border transition-all duration-300 ease-in-out shadow-xl",
-          isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
-        )}
-      >
-        <div className="px-4 pt-2 pb-6 space-y-2">
+      {/* Mobile Bottom Floating Nav */}
+      <div className="md:hidden fixed bottom-6 left-0 w-full z-50 px-4">
+        <div className="max-w-md mx-auto bg-slate-900/90 backdrop-blur-2xl border border-white/10 rounded-full shadow-2xl px-4 py-3 flex justify-around items-center">
           {navLinks.map((link) => (
             <Link
               key={link.name}
               href={link.href}
-              onClick={() => setIsOpen(false)}
-              className="block px-3 py-4 text-base font-bold uppercase tracking-wider text-[#01357D] hover:bg-muted rounded-md"
+              className="flex flex-col items-center gap-1 text-white/60 hover:text-primary transition-all active:scale-90"
             >
-              {link.name}
+              <link.icon className="h-5 w-5" />
+              <span className="text-[10px] font-bold uppercase tracking-tighter">{link.name}</span>
             </Link>
           ))}
-          <Button className="w-full mt-4 h-12 bg-[#01357D] text-white uppercase tracking-widest font-bold">Free Consultation</Button>
         </div>
       </div>
-    </nav>
+
+      {/* Bottom spacer for mobile to prevent content clipping */}
+      <div className="md:hidden h-24" />
+    </>
   );
-}
+}

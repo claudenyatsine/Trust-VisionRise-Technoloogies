@@ -1,11 +1,11 @@
-import type {Metadata} from 'next';
-import './globals.css';
+import type { Metadata } from "next";
+import "./globals.css";
+import { SmoothScrolling } from "@/components/providers/SmoothScrolling";
 
 export const metadata: Metadata = {
-  title: 'GuardianSight Solutions | Professional CCTV Installation',
-  description: 'Expert industrial-grade surveillance and CCTV installation services for home and business.',
+  title: "GuardianSight Solutions | Professional CCTV Installation",
+  description: "Expert industrial-grade surveillance and CCTV installation services for home and business.",
 };
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -19,7 +19,9 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
       </head>
       <body className="font-body antialiased selection:bg-primary selection:text-primary-foreground">
-        {children}
+        <SmoothScrolling>
+          {children}
+        </SmoothScrolling>
       </body>
     </html>
   );
