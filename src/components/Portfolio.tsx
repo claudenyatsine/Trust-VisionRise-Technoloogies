@@ -181,12 +181,12 @@ export function Portfolio() {
             className="flex-1 overflow-x-auto scrollbar-hide"
             style={{ scrollBehavior: "auto" }}
           >
-            <div className="flex gap-2 md:gap-10 min-w-max">
+            <div className="flex items-stretch gap-2 md:gap-10 min-w-max">
               {projects.map((project, idx) => {
                 const img = PlaceHolderImages.find(p => p.id === project.image);
                 return (
-                  <div key={idx} className="portfolio-card w-[120px] md:w-[350px]">
-                    <Card className="bg-white border-border shadow-md md:shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden">
+                  <div key={idx} className="portfolio-card h-full min-h-[24rem] md:min-h-[38rem] w-[120px] md:w-[350px]">
+                    <Card className="flex h-full flex-col bg-white border-border shadow-md md:shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden">
                       <div className="relative aspect-[4/3] overflow-hidden">
                         <Image
                           src={img?.imageUrl || ""}
@@ -202,13 +202,15 @@ export function Portfolio() {
                           </span>
                         </div>
                       </div>
-                      <CardContent className="p-2 md:p-8">
-                        <h4 className="text-[#01357D] font-headline font-bold text-[10px] md:text-xl mb-1 md:mb-3 uppercase tracking-tighter md:tracking-tight leading-tight">
-                          {project.title}
-                        </h4>
-                        <p className="text-[#01357D]/90 text-[8px] md:text-sm leading-relaxed hidden md:block">
-                          {project.description}
-                        </p>
+                      <CardContent className="flex h-full flex-1 flex-col justify-between p-2 md:p-8">
+                        <div>
+                          <h4 className="text-[#01357D] font-headline font-bold text-[10px] md:text-xl mb-1 md:mb-3 uppercase tracking-tighter md:tracking-tight leading-tight">
+                            {project.title}
+                          </h4>
+                          <p className="text-[#01357D]/90 text-[8px] md:text-sm leading-relaxed hidden md:block">
+                            {project.description}
+                          </p>
+                        </div>
                       </CardContent>
                     </Card>
                   </div>
