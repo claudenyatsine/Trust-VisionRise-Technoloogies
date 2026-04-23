@@ -3,10 +3,11 @@
 import Image from "next/image";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -35,6 +36,31 @@ const projects = [
 
 export function Portfolio() {
   const containerRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkScroll = () => {
+    if (gridRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = gridRef.current;
+      setCanScrollLeft(scrollLeft > 0);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  };
+
+  const scroll = (direction: "left" | "right") => {
+    if (!gridRef.current) return;
+    
+    const scrollAmount = 400;
+    gsap.to(gridRef.current, {
+      scrollLeft: direction === "left" 
+        ? gridRef.current.scrollLeft - scrollAmount
+        : gridRef.current.scrollLeft + scrollAmount,
+      duration: 0.6,
+      ease: "power2.inOut",
+      onComplete: checkScroll,
+    });
+  };
 
   useGSAP(() => {
     gsap.from(".portfolio-card", {
@@ -60,7 +86,16 @@ export function Portfolio() {
         start: "top 90%",
       }
     });
+
+    checkScroll();
   }, { scope: containerRef });
+
+  useGSAP(() => {
+    gridRef.current?.addEventListener("scroll", checkScroll);
+    return () => {
+      gridRef.current?.removeEventListener("scroll", checkScroll);
+    };
+  });
 
   return (
     <section id="portfolio" ref={containerRef} className="py-24 bg-white overflow-hidden">
@@ -77,41 +112,67 @@ export function Portfolio() {
           </p>
         </div>
 
-        <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-10">
-          {projects.map((project, idx) => {
-            const img = PlaceHolderImages.find(p => p.id === project.image);
-            return (
-              <div key={idx} className="portfolio-card">
-                <Card className="bg-white border-border shadow-md md:shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden">
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <Image
-                      src={img?.imageUrl || ""}
-                      alt={project.title}
-                      fill
-                      className="object-cover transition-transform duration-700 group-hover:scale-110"
-                      data-ai-hint={img?.imageHint}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#01357D]/40 via-transparent to-transparent opacity-60" />
-                    <div className="absolute bottom-1 left-1 md:bottom-4 md:left-4">
-                      <span className="px-1 py-0.5 md:px-3 md:py-1 bg-[#01357D] text-white text-[6px] md:text-[10px] font-bold uppercase tracking-widest shadow-xl">
-                        {project.location}
-                      </span>
-                    </div>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => scroll("left")}
+            disabled={!canScrollLeft}
+            className="flex-shrink-0 p-2 rounded-full bg-[#01357D] text-white hover:bg-[#01357D]/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft size={24} />
+          </button>
+
+          <div
+            ref={gridRef}
+            className="flex-1 overflow-x-auto scrollbar-hide"
+            style={{ scrollBehavior: "auto" }}
+          >
+            <div className="grid grid-cols-3 gap-2 md:gap-10 min-w-max">
+              {projects.map((project, idx) => {
+                const img = PlaceHolderImages.find(p => p.id === project.image);
+                return (
+                  <div key={idx} className="portfolio-card w-[120px] md:w-[350px]">
+                    <Card className="bg-white border-border shadow-md md:shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden">
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <Image
+                          src={img?.imageUrl || ""}
+                          alt={project.title}
+                          fill
+                          className="object-cover transition-transform duration-700 group-hover:scale-110"
+                          data-ai-hint={img?.imageHint}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#01357D]/40 via-transparent to-transparent opacity-60" />
+                        <div className="absolute bottom-1 left-1 md:bottom-4 md:left-4">
+                          <span className="px-1 py-0.5 md:px-3 md:py-1 bg-[#01357D] text-white text-[6px] md:text-[10px] font-bold uppercase tracking-widest shadow-xl">
+                            {project.location}
+                          </span>
+                        </div>
+                      </div>
+                      <CardContent className="p-2 md:p-8">
+                        <h4 className="text-[#01357D] font-headline font-bold text-[10px] md:text-xl mb-1 md:mb-3 uppercase tracking-tighter md:tracking-tight leading-tight">
+                          {project.title}
+                        </h4>
+                        <p className="text-[#01357D]/90 text-[8px] md:text-sm leading-relaxed hidden md:block">
+                          {project.description}
+                        </p>
+                      </CardContent>
+                    </Card>
                   </div>
-                  <CardContent className="p-2 md:p-8">
-                    <h4 className="text-[#01357D] font-headline font-bold text-[10px] md:text-xl mb-1 md:mb-3 uppercase tracking-tighter md:tracking-tight leading-tight">
-                      {project.title}
-                    </h4>
-                    <p className="text-[#01357D]/90 text-[8px] md:text-sm leading-relaxed hidden md:block">
-                      {project.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
-            );
-          })}
+                );
+              })}
+            </div>
+          </div>
+
+          <button
+            onClick={() => scroll("right")}
+            disabled={!canScrollRight}
+            className="flex-shrink-0 p-2 rounded-full bg-[#01357D] text-white hover:bg-[#01357D]/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300"
+            aria-label="Scroll right"
+          >
+            <ChevronRight size={24} />
+          </button>
         </div>
       </div>
     </section>
   );
-}
+}

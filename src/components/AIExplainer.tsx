@@ -1,11 +1,13 @@
 "use client";
 
 import * as React from "react";
-import { MessageSquare, Send, Bot, User, X } from "lucide-react";
+import Image from "next/image";
+import { Send, Bot, User, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { aiChatbotForServiceExplainer } from "@/ai/flows/ai-chatbot-service-explainer";
 import { cn } from "@/lib/utils";
+import whatsappIcon from "@/app/resources/svg/whatsapp-color-svgrepo-com.svg";
 
 export function AIExplainer() {
   const [isOpen, setIsOpen] = React.useState(false);
@@ -44,18 +46,21 @@ export function AIExplainer() {
   return (
     <>
       <div className="fixed bottom-6 right-6 z-50">
-        <Button
-          onClick={() => setIsOpen(!isOpen)}
-          className="h-16 w-16 rounded-full shadow-2xl bg-[#01357D] text-white flex items-center justify-center p-0 overflow-hidden relative border-4 border-white"
+        <a
+          href="https://wa.me/263774264540"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="h-16 w-16 rounded-full shadow-2xl bg-[#25D366] text-white flex items-center justify-center p-0 overflow-hidden relative border-4 border-white hover:bg-[#20BA5A] transition-colors"
         >
-          {isOpen ? <X className="h-8 w-8" /> : <MessageSquare className="h-8 w-8" />}
-          {!isOpen && <div className="absolute inset-0 bg-white/20 animate-pulse pointer-events-none" />}
-        </Button>
+          <div className="relative h-8 w-8">
+            <Image src={whatsappIcon} alt="WhatsApp" fill className="object-contain" />
+          </div>
+          <div className="absolute inset-0 bg-white/20 animate-pulse pointer-events-none" />
+        </a>
       </div>
 
       <div className={cn(
-        "fixed bottom-24 right-6 z-50 w-[90vw] md:w-[420px] bg-white border border-border rounded-2xl shadow-2xl transition-all duration-500 origin-bottom-right transform overflow-hidden",
-        isOpen ? "scale-100 opacity-100 translate-y-0" : "scale-0 opacity-0 translate-y-10"
+        "fixed bottom-24 right-6 z-50 w-[90vw] md:w-[420px] bg-white border border-border rounded-2xl shadow-2xl transition-all duration-500 origin-bottom-right transform overflow-hidden hidden"
       )}>
         <div className="p-6 bg-[#01357D] flex items-center gap-4 shadow-lg">
           <div className="p-2 bg-white/10 rounded-xl">

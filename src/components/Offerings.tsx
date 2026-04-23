@@ -75,7 +75,7 @@ export function Offerings() {
   return (
     <section id="products" ref={containerRef} className="py-24 bg-slate-50 overflow-hidden">
       <div className="container max-w-7xl mx-auto px-4">
-        
+
         {/* New Arrivals Section */}
         <div ref={arrivalsRef} className="mb-24">
           <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
@@ -84,7 +84,7 @@ export function Offerings() {
                 <span className="w-8 h-[2px] bg-primary"></span> New Arrivals
               </h2>
               <h3 className="text-3xl md:text-5xl font-headline font-bold text-[#01357D] uppercase tracking-tighter">
-                Latest <span className="text-primary italic">Surveillance</span> Tech
+                Latest <span>Surveillance</span> Tech
               </h3>
             </div>
             <Link href="/shop">
@@ -154,8 +154,8 @@ export function Offerings() {
 
           <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-8">
             {packages.map((pkg, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`package-card relative p-0.5 md:p-1 rounded-lg md:rounded-2xl transition-transform duration-300 hover:-translate-y-2 ${pkg.recommended ? 'bg-gradient-to-b from-primary to-[#01357D] shadow-xl' : 'bg-slate-200'}`}
               >
                 {pkg.recommended && (
@@ -168,7 +168,7 @@ export function Offerings() {
                     <h4 className="text-[#01357D] font-headline font-bold text-[10px] md:text-2xl uppercase tracking-tighter md:tracking-tight mb-1 leading-tight">{pkg.name}</h4>
                     <p className="text-slate-500 text-[8px] md:text-sm hidden md:block">{pkg.description}</p>
                   </div>
-                  
+
 
                   <ul className="space-y-1 md:space-y-4 mb-4 md:mb-10 flex-grow hidden md:block">
                     {pkg.features.map((feature, fIdx) => (

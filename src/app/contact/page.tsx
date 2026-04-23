@@ -20,9 +20,9 @@ export default function ContactPage() {
 
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {[
-                { icon: Phone, title: "Direct Hotline", lines: ["Sales: 1-800-GUARDIAN-S", "Support: 1-800-EYES-ON-US"] },
-                { icon: Mail, title: "Email Us", lines: ["Enquiries: sales@guardiansight.com", "Technical: support@guardiansight.com"] },
-                { icon: MapPin, title: "Visit Head Office", lines: ["1200 Industrial Way, Tech District", "Safety City, SC 90210"] },
+                { icon: Phone, title: "Direct Hotline", lines: ["Sales/Support: +263 713 012 399/ 711 499 000"] },
+                { icon: Mail, title: "Email Us", lines: ["Enquiries/Technical: trustivisionrisetechnology@gmail.com"] },
+                { icon: MapPin, title: "Visit Head Office", lines: ["Shop 33, Cameroon Mall", "Harare CDB, Harae"] },
                 { icon: Clock, title: "Business Hours", lines: ["Mon-Fri: 8:00 AM - 6:00 PM", "Emergency Support: 24/7 Available"] }
               ].map((item, i) => (
                 <div key={i} className="p-8 bg-card border border-border rounded-2xl flex flex-col items-center space-y-4 shadow-lg hover:shadow-xl transition-shadow">

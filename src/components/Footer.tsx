@@ -57,15 +57,15 @@ export function Footer() {
             <ul className="space-y-5 text-sm font-medium text-[#01357D]">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-[#01357D] shrink-0" />
-                <span>1200 Industrial Way, Tech District<br />Safety City, SC 90210</span>
+                <span>Shop 33, Cameroon Mall<br />Harare CBD, Harare</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="h-5 w-5 text-[#01357D] shrink-0" />
-                <span className="font-bold">1-800-GUARDIAN</span>
+                <span className="font-bold">+263 713 012 399/ 711 499 000</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-[#01357D] shrink-0" />
-                <span className="font-bold">contact@guardiansight.com</span>
+                <span className="font-bold">trustivisionrisetechnology@gmail.com</span>
               </li>
             </ul>
           </div>
