@@ -43,10 +43,56 @@
       "imageHint": "retail store"
     },
     {
-      "id": "portfolio-estate",
-      "description": "Luxury estate perimeter security",
-      "imageUrl": "https://picsum.photos/seed/port3/800/600",
-      "imageHint": "luxury mansion"
+      "id": "portfolio-office",
+      "description": "Modern office building security",
+      "imageUrl": "https://picsum.photos/seed/port4/800/600",
+      "imageHint": "office building"
+    },
+    {
+      "id": "portfolio-industrial",
+      "description": "Industrial facility surveillance",
+      "imageUrl": "https://picsum.photos/seed/port5/800/600",
+      "imageHint": "industrial complex"
+    },
+    {
+      "id": "portfolio-campus",
+      "description": "University campus security",
+      "imageUrl": "https://picsum.photos/seed/port6/800/600",
+      "imageHint": "university campus"
+    },
+    {
+      "id": "portfolio-hotel",
+      "description": "Luxury hotel security system",
+      "imageUrl": "https://picsum.photos/seed/port7/800/600",
+      "imageHint": "luxury hotel"
+    },
+    {
+      "id": "portfolio-medical",
+      "description": "Medical facility security",
+      "imageUrl": "https://picsum.photos/seed/port8/800/600",
+      "imageHint": "medical research"
+    },
+    {
+      "id": "portfolio-stadium",
+      "description": "Sports stadium surveillance",
+      "imageUrl": "https://picsum.photos/seed/port9/800/600",
+      "imageHint": "sports stadium"
+    },
+    {
+      "id": "portfolio-airport",
+      "description": "Airport security systems",
+      "imageUrl": "https://picsum.photos/seed/port10/800/600",
+      "imageHint": "airport terminal"
+    },
+    {
+      "id": "portfolio-datacenter",
+      "description": "Data center security",
+      "imageUrl": "https://picsum.photos/seed/port11/800/600",
+      "imageHint": "data center"
+    },
+    {
+      "id": "portfolio-museum",
+      "description": "Museum security and monitoring",
+      "imageUrl": "https://picsum.photos/seed/port12/800/600",
+      "imageHint": "museum collection"
     }
-  ]
-}
