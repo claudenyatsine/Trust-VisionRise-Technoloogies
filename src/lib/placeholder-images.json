@@ -37,6 +37,12 @@
       "imageHint": "industrial warehouse"
     },
     {
+      "id": "portfolio-retail",
+      "description": "Retail shop security system",
+      "imageUrl": "https://picsum.photos/seed/port2/800/600",
+      "imageHint": "retail store"
+    },
+    {
       "id": "portfolio-estate",
       "description": "Luxury estate perimeter security",
       "imageUrl": "https://picsum.photos/seed/port3/800/600",
