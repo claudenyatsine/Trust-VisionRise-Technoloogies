@@ -181,7 +181,7 @@ export function Portfolio() {
             className="flex-1 overflow-x-auto scrollbar-hide"
             style={{ scrollBehavior: "auto" }}
           >
-            <div className="grid grid-cols-3 gap-2 md:gap-10 min-w-max">
+            <div className="flex gap-2 md:gap-10 min-w-max">
               {projects.map((project, idx) => {
                 const img = PlaceHolderImages.find(p => p.id === project.image);
                 return (
