@@ -32,6 +32,60 @@ const projects = [
     description: "Private thermal imaging and laser-tripwire security for a premier residential community.",
     image: "portfolio-estate",
   },
+  {
+    title: "Downtown Financial District",
+    location: "New York, NY",
+    description: "Advanced facial recognition and access control for high-rise office complex.",
+    image: "portfolio-office",
+  },
+  {
+    title: "Harbor Industrial Complex",
+    location: "Los Angeles, CA",
+    description: "Perimeter security with motion detection and automated alerts for manufacturing facility.",
+    image: "portfolio-industrial",
+  },
+  {
+    title: "University Campus Center",
+    location: "Boston, MA",
+    description: "Comprehensive surveillance network covering academic buildings and student housing.",
+    image: "portfolio-campus",
+  },
+  {
+    title: "Luxury Resort & Spa",
+    location: "Miami, FL",
+    description: "Discreet monitoring systems for guest privacy and property protection.",
+    image: "portfolio-hotel",
+  },
+  {
+    title: "Medical Research Facility",
+    location: "San Francisco, CA",
+    description: "Secure access control and 24/7 monitoring for sensitive research areas.",
+    image: "portfolio-medical",
+  },
+  {
+    title: "Sports Entertainment Complex",
+    location: "Dallas, TX",
+    description: "Multi-camera coverage for event security and crowd management.",
+    image: "portfolio-stadium",
+  },
+  {
+    title: "Airport Cargo Terminal",
+    location: "Atlanta, GA",
+    description: "High-security surveillance for international cargo handling operations.",
+    image: "portfolio-airport",
+  },
+  {
+    title: "Data Center Facility",
+    location: "Phoenix, AZ",
+    description: "Critical infrastructure protection with redundant monitoring systems.",
+    image: "portfolio-datacenter",
+  },
+  {
+    title: "Historic Museum Collection",
+    location: "Washington, DC",
+    description: "Specialized art protection systems with environmental monitoring.",
+    image: "portfolio-museum",
+  },
 ];
 
 export function Portfolio() {
