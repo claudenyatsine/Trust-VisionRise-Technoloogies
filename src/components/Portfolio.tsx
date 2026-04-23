@@ -202,12 +202,12 @@ export function Portfolio() {
                           </span>
                         </div>
                       </div>
-                      <CardContent className="flex h-full flex-1 flex-col justify-between p-2 md:p-8">
-                        <div className="flex flex-col h-full">
-                          <h4 className="text-[#01357D] font-headline font-bold text-[10px] md:text-xl mb-1 md:mb-3 uppercase tracking-tighter md:tracking-tight leading-tight line-clamp-2 md:line-clamp-3">
+                      <CardContent className="h-[8rem] md:h-[12rem] p-2 md:p-8 overflow-hidden">
+                        <div className="h-full flex flex-col">
+                          <h4 className="text-[#01357D] font-headline font-bold text-[10px] md:text-xl mb-1 md:mb-3 uppercase tracking-tighter md:tracking-tight leading-tight overflow-hidden text-ellipsis">
                             {project.title}
                           </h4>
-                          <p className="text-[#01357D]/90 text-[8px] md:text-sm leading-relaxed hidden md:block line-clamp-2 md:line-clamp-4 flex-1">
+                          <p className="text-[#01357D]/90 text-[8px] md:text-sm leading-relaxed flex-1 overflow-hidden text-ellipsis">
                             {project.description}
                           </p>
                         </div>
