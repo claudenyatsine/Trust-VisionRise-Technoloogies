@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Trash2, Package, LayoutGrid, LogOut, Check, X, Edit2, Sparkles, ArrowRight, Image as ImageIcon, Star } from "lucide-react";
+import { Plus, Trash2, Package, LayoutGrid, LogOut, Check, X, Edit2, Sparkles, ArrowRight, Image as ImageIcon, Star, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     addProduct, updateProduct, removeProduct, 
     addProject, updateProject, removeProject, 
     addNewArrival, updateNewArrival, removeNewArrival, moveNewArrivalToProducts,
+    gallery, addGalleryItem, updateGalleryItem, removeGalleryItem,
+    downloads, addDownload, updateDownload, removeDownload,
     logout 
   } = useAdmin();
   const [activeTab, setActiveTab] = useState("products");
@@ -53,8 +55,26 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     images: [] as string[],
   };
   const [newProject, setNewProject] = useState(initialProject);
-  const [showNewCategoryInput, setShowNewCategoryInput] = useState<'product' | 'new-arrival' | null>(null);
   const [customCategory, setCustomCategory] = useState("");
+  
+  // New Gallery Form State
+  const initialGalleryItem = {
+    title: "",
+    image: "",
+    category: "Installation",
+  };
+  const [newGalleryItem, setNewGalleryItem] = useState(initialGalleryItem);
+
+  // New Download Form State
+  const initialDownload = {
+    title: "",
+    description: "",
+    fileSize: "",
+    fileType: "PDF",
+    downloadUrl: "",
+    category: "Manual",
+  };
+  const [newDownload, setNewDownload] = useState(initialDownload);
 
   const handleProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,6 +96,28 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
       addProject(newProject);
     }
     setNewProject(initialProject);
+  };
+
+  const handleGallerySubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingId) {
+      updateGalleryItem({ ...newGalleryItem, id: editingId });
+      setEditingId(null);
+    } else {
+      addGalleryItem({ ...newGalleryItem, id: Math.random().toString(36).substr(2, 9) });
+    }
+    setNewGalleryItem(initialGalleryItem);
+  };
+
+  const handleDownloadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingId) {
+      updateDownload({ ...newDownload, id: editingId });
+      setEditingId(null);
+    } else {
+      addDownload({ ...newDownload, id: Math.random().toString(36).substr(2, 9) });
+    }
+    setNewDownload(initialDownload);
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'project' | 'new-arrival') => {
@@ -102,6 +144,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             images: [...(prev.images || []), base64String],
             image: prev.image && !prev.image.startsWith('/images') ? prev.image : base64String
           }));
+        } else if (type === 'gallery') {
+          setNewGalleryItem(prev => ({ ...prev, image: base64String }));
         }
       };
       reader.readAsDataURL(file);
@@ -159,6 +203,18 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setActiveTab("new-arrivals");
   };
 
+  const startEditingGalleryItem = (item: any) => {
+    setNewGalleryItem(item);
+    setEditingId(item.id);
+    setActiveTab("gallery");
+  };
+
+  const startEditingDownload = (item: any) => {
+    setNewDownload(item);
+    setEditingId(item.id);
+    setActiveTab("downloads");
+  };
+
   const categories = Array.from(new Set([
     "CCTV Cameras", "Recording Units", "Smart Home", "Access Control", "Specialized",
     ...products.map(p => p.category),
@@ -171,6 +227,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setNewProduct(initialProduct);
     setNewProject(initialProject);
     setNewNewArrival(initialProduct);
+    setNewGalleryItem(initialGalleryItem);
+    setNewDownload(initialDownload);
   };
 
   return (
@@ -207,6 +265,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             <TabsTrigger value="projects" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
               <LayoutGrid size={14} />
               Projects ({projects.length})
+            </TabsTrigger>
+            <TabsTrigger value="gallery" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
+              <ImageIcon size={14} />
+              Gallery ({gallery.length})
+            </TabsTrigger>
+            <TabsTrigger value="downloads" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
+              <Download size={14} />
+              Downloads ({downloads.length})
             </TabsTrigger>
           </TabsList>
         </div>
@@ -482,7 +548,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <Textarea placeholder="Detailed Description" value={newNewArrival.description} onChange={e => setNewNewArrival({...newNewArrival, description: e.target.value})} required className="bg-white" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">New Arrival Images</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">New Arrival Images (First one selected will be profile unless changed)</label>
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-4">
                     {newNewArrival.images?.map((img, idx) => (
                       <div key={idx} className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${newNewArrival.image === img ? 'border-[#01357D] scale-105 shadow-md' : 'border-slate-200'}`}>
@@ -602,7 +668,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <Textarea placeholder="Project Scope/Description" value={newProject.description} onChange={e => setNewProject({...newProject, description: e.target.value})} required className="bg-white" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Project Portfolio Gallery</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Project Portfolio Gallery (First one selected will be profile unless changed)</label>
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-4">
                     {newProject.images?.map((img, idx) => (
                       <div key={idx} className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${newProject.image === img ? 'border-[#01357D] scale-105 shadow-md' : 'border-slate-200'}`}>
@@ -678,6 +744,163 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       <Edit2 size={16} />
                     </Button>
                     <Button variant="ghost" size="icon" onClick={() => removeProject(project.title)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
+                      <Trash2 size={18} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="gallery" className="m-0 space-y-8">
+            <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
+              <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
+                {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
+                {editingId ? "Update Gallery Image" : "Add Image to Gallery"}
+              </h3>
+              <form onSubmit={handleGallerySubmit} className="grid grid-cols-2 gap-4">
+                <Input 
+                  placeholder="Image Title" 
+                  value={newGalleryItem.title} 
+                  onChange={e => setNewGalleryItem({...newGalleryItem, title: e.target.value})} 
+                  required 
+                  className="bg-white" 
+                />
+                <Select value={newGalleryItem.category} onValueChange={(val) => setNewGalleryItem({...newGalleryItem, category: val})}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Installation">Installation</SelectItem>
+                    <SelectItem value="Products">Products</SelectItem>
+                    <SelectItem value="Team">Our Team</SelectItem>
+                    <SelectItem value="Events">Events</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Gallery Image</label>
+                  <div className="flex gap-4 items-center">
+                    {newGalleryItem.image && (
+                      <div className="w-24 h-24 rounded-lg overflow-hidden border">
+                        <img src={newGalleryItem.image} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                    <label className="flex-1 h-24 rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
+                      <Plus size={16} className="text-slate-400" />
+                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">Upload Image</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const reader = new FileReader();
+                            reader.onloadend = () => {
+                              setNewGalleryItem(prev => ({ ...prev, image: reader.result as string }));
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }} 
+                        className="hidden" 
+                      />
+                    </label>
+                  </div>
+                </div>
+                <Button type="submit" className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {editingId ? "Update Image" : "Publish to Gallery"}
+                </Button>
+              </form>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {gallery.map((item) => (
+                <div key={item.id} className="group relative aspect-square rounded-xl overflow-hidden border bg-white">
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                    <p className="text-white font-bold text-[10px] uppercase text-center px-2">{item.title}</p>
+                    <div className="flex gap-2">
+                      <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => startEditingGalleryItem(item)}>
+                        <Edit2 size={14} />
+                      </Button>
+                      <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => removeGalleryItem(item.id)}>
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="downloads" className="m-0 space-y-8">
+            <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
+              <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
+                {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
+                {editingId ? "Update Resource" : "Add Downloadable Resource"}
+              </h3>
+              <form onSubmit={handleDownloadSubmit} className="grid grid-cols-2 gap-4">
+                <Input 
+                  placeholder="Resource Title" 
+                  value={newDownload.title} 
+                  onChange={e => setNewDownload({...newDownload, title: e.target.value})} 
+                  required 
+                  className="bg-white" 
+                />
+                <Select value={newDownload.category} onValueChange={(val) => setNewDownload({...newDownload, category: val})}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Manual">User Manual</SelectItem>
+                    <SelectItem value="Software">Software/Firmware</SelectItem>
+                    <SelectItem value="Catalog">Catalog/Brochure</SelectItem>
+                    <SelectItem value="Certificate">Certifications</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="col-span-2">
+                  <Input 
+                    placeholder="Brief Description" 
+                    value={newDownload.description} 
+                    onChange={e => setNewDownload({...newDownload, description: e.target.value})} 
+                    className="bg-white" 
+                  />
+                </div>
+                <Input 
+                  placeholder="File Size (e.g. 2.4 MB)" 
+                  value={newDownload.fileSize} 
+                  onChange={e => setNewDownload({...newDownload, fileSize: e.target.value})} 
+                  className="bg-white" 
+                />
+                <Input 
+                  placeholder="Download URL" 
+                  value={newDownload.downloadUrl} 
+                  onChange={e => setNewDownload({...newDownload, downloadUrl: e.target.value})} 
+                  required 
+                  className="bg-white" 
+                />
+                <Button type="submit" className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {editingId ? "Update Resource" : "Add to Downloads"}
+                </Button>
+              </form>
+            </div>
+
+            <div className="space-y-3">
+              {downloads.map((file) => (
+                <div key={file.id} className="flex items-center justify-between p-4 bg-white border rounded-lg hover:shadow-md transition-shadow group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center text-[#01357D]">
+                      <FileText size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-[#01357D] text-sm">{file.title}</h4>
+                      <p className="text-[10px] text-slate-400 font-mono">{file.category} • {file.fileSize}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => startEditingDownload(file)} className="text-slate-300 hover:text-[#01357D] hover:bg-slate-50">
+                      <Edit2 size={16} />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => removeDownload(file.id)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
                       <Trash2 size={18} />
                     </Button>
                   </div>

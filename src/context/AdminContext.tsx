@@ -11,6 +11,23 @@ export interface Project {
   images?: string[];
 }
 
+export interface GalleryItem {
+  id: string;
+  title: string;
+  image: string;
+  category: string;
+}
+
+export interface DownloadableFile {
+  id: string;
+  title: string;
+  description: string;
+  fileSize: string;
+  fileType: string;
+  downloadUrl: string;
+  category: string;
+}
+
 interface AdminContextType {
   products: Product[];
   projects: Project[];
@@ -28,6 +45,14 @@ interface AdminContextType {
   addProject: (project: Project) => void;
   updateProject: (project: Project) => void;
   removeProject: (title: string) => void;
+  gallery: GalleryItem[];
+  addGalleryItem: (item: GalleryItem) => void;
+  updateGalleryItem: (item: GalleryItem) => void;
+  removeGalleryItem: (id: string) => void;
+  downloads: DownloadableFile[];
+  addDownload: (file: DownloadableFile) => void;
+  updateDownload: (file: DownloadableFile) => void;
+  removeDownload: (id: string) => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -65,12 +90,16 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [newArrivals, setNewArrivals] = useState<Product[]>(PRODUCTS.slice(0, 4));
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
+  const [downloads, setDownloads] = useState<DownloadableFile[]>([]);
 
   // Load from localStorage
   useEffect(() => {
     const savedProducts = localStorage.getItem("trust_vision_products");
     const savedNewArrivals = localStorage.getItem("trust_vision_new_arrivals");
     const savedProjects = localStorage.getItem("trust_vision_projects");
+    const savedGallery = localStorage.getItem("trust_vision_gallery");
+    const savedDownloads = localStorage.getItem("trust_vision_downloads");
     const adminSession = sessionStorage.getItem("trust_vision_admin");
 
     if (savedProducts) {
@@ -84,6 +113,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (savedProjects) {
       const parsed = JSON.parse(savedProjects);
       if (parsed.length > 0) setProjects(parsed);
+    }
+    if (savedGallery) {
+      const parsed = JSON.parse(savedGallery);
+      if (parsed.length > 0) setGallery(parsed);
+    }
+    if (savedDownloads) {
+      const parsed = JSON.parse(savedDownloads);
+      if (parsed.length > 0) setDownloads(parsed);
     }
     if (adminSession === "true") setIsAdmin(true);
   }, []);
@@ -100,6 +137,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     localStorage.setItem("trust_vision_projects", JSON.stringify(projects));
   }, [projects]);
+
+  useEffect(() => {
+    localStorage.setItem("trust_vision_gallery", JSON.stringify(gallery));
+  }, [gallery]);
+
+  useEffect(() => {
+    localStorage.setItem("trust_vision_downloads", JSON.stringify(downloads));
+  }, [downloads]);
 
   const login = (password: string) => {
     // Simple hardcoded password for the "backdoor"
@@ -160,6 +205,30 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setProjects((prev) => prev.filter((p) => p.title !== title));
   };
 
+  const addGalleryItem = (item: GalleryItem) => {
+    setGallery((prev) => [...prev, item]);
+  };
+
+  const updateGalleryItem = (updatedItem: GalleryItem) => {
+    setGallery((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)));
+  };
+
+  const removeGalleryItem = (id: string) => {
+    setGallery((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const addDownload = (file: DownloadableFile) => {
+    setDownloads((prev) => [...prev, file]);
+  };
+
+  const updateDownload = (updatedFile: DownloadableFile) => {
+    setDownloads((prev) => prev.map((file) => (file.id === updatedFile.id ? updatedFile : file)));
+  };
+
+  const removeDownload = (id: string) => {
+    setDownloads((prev) => prev.filter((file) => file.id !== id));
+  };
+
   return (
     <AdminContext.Provider
       value={{
@@ -179,6 +248,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addProject,
         updateProject,
         removeProject,
+        gallery,
+        addGalleryItem,
+        updateGalleryItem,
+        removeGalleryItem,
+        downloads,
+        addDownload,
+        updateDownload,
+        removeDownload,
       }}
     >
       {children}

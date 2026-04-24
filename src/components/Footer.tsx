@@ -47,7 +47,7 @@ export function Footer() {
             <ul className="space-y-4 text-sm font-bold text-[#01357D]/70 uppercase tracking-wider">
               <li><Link href="#" className="hover:text-[#01357D] transition-colors">Customer Support</Link></li>
               <li><Link href="#" className="hover:text-[#01357D] transition-colors">Technical Base</Link></li>
-              <li><Link href="#" className="hover:text-[#01357D] transition-colors">Downloads</Link></li>
+              <li><Link href="/downloads" className="hover:text-[#01357D] transition-colors">Downloads</Link></li>
               <li><Link href="#" className="hover:text-[#01357D] transition-colors">Monitoring Login</Link></li>
             </ul>
           </div>
