@@ -8,13 +8,21 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ShoppingCart, Star, Plus, SlidersHorizontal, PackageSearch } from "lucide-react";
+import { Search, ShoppingCart, Star, Plus, SlidersHorizontal, PackageSearch, Eye } from "lucide-react";
 import Image from "next/image";
+import { ItemDetailsModal } from "../../components/ItemDetailsModal";
 
 export default function ShopPage() {
   const { products } = useAdmin();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openDetails = (item: any) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
 
   const categories = useMemo(() => ["All", ...Array.from(new Set(products.map((p) => p.category)))], [products]);
 
@@ -89,7 +97,7 @@ export default function ShopPage() {
           {filteredProducts.length > 0 ? (
             <div id="products" className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {filteredProducts.map((product) => (
-                <Card key={product.id} className="bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group overflow-hidden flex flex-col h-full">
+                <Card key={product.id} className="bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group overflow-hidden flex flex-col h-full cursor-pointer" onClick={() => openDetails(product)}>
                   <div className="relative aspect-[4/5] overflow-hidden">
                     <Image
                       src={product.image}
@@ -106,10 +114,10 @@ export default function ShopPage() {
                     )}
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-3">
                       <Button size="icon" className="rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors">
-                        <ShoppingCart className="h-5 w-5" />
+                        <Eye className="h-5 w-5" />
                       </Button>
                       <Button size="icon" className="rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors">
-                        <Plus className="h-5 w-5" />
+                        <ShoppingCart className="h-5 w-5" />
                       </Button>
                     </div>
                   </div>
@@ -151,6 +159,14 @@ export default function ShopPage() {
           )}
         </div>
       </main>
+
+      {selectedItem && (
+        <ItemDetailsModal 
+          item={selectedItem} 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+        />
+      )}
 
       <Footer />
     </div>

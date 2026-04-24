@@ -9,6 +9,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
+import { ItemDetailsModal } from "./ItemDetailsModal";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -22,6 +23,13 @@ export function Portfolio() {
   const gridRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openDetails = (item: any) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
 
   const checkScroll = () => {
     if (gridRef.current) {
@@ -111,18 +119,15 @@ export function Portfolio() {
             style={{ scrollBehavior: "auto" }}
           >
             <div className="flex items-stretch gap-2 md:gap-10 min-w-max">
-              {projects.map((project, idx) => {
-                const img = PlaceHolderImages.find(p => p.id === project.image);
-                return (
-                  <div key={idx} className="portfolio-card h-full min-h-[24rem] md:min-h-[38rem] w-[120px] md:w-[350px]">
+              {projects.map((project, idx) => (
+                  <div key={idx} className="portfolio-card h-full min-h-[24rem] md:min-h-[38rem] w-[120px] md:w-[350px] cursor-pointer" onClick={() => openDetails(project)}>
                     <Card className="flex h-full flex-col bg-white border-border shadow-md md:shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden">
                       <div className="relative aspect-[4/3] overflow-hidden">
                         <Image
-                          src={img?.imageUrl || ""}
+                          src={project.image.startsWith('data:') || project.image.startsWith('/') ? project.image : (PlaceHolderImages.find(p => p.id === project.image)?.imageUrl || "")}
                           alt={project.title}
                           fill
                           className="object-cover transition-transform duration-700 group-hover:scale-110"
-                          data-ai-hint={img?.imageHint}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-[#01357D]/40 via-transparent to-transparent opacity-60" />
                         <div className="absolute bottom-1 left-1 md:bottom-4 md:left-4">
@@ -143,8 +148,7 @@ export function Portfolio() {
                       </CardContent>
                     </Card>
                   </div>
-                );
-              })}
+              ))}
             </div>
           </div>
 
@@ -158,6 +162,14 @@ export function Portfolio() {
           </button>
         </div>
       </div>
+
+      {selectedItem && (
+        <ItemDetailsModal 
+          item={selectedItem} 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+        />
+      )}
     </section>
   );
 }

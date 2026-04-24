@@ -3,14 +3,15 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Zap, Shield, Star, Plus, Check } from "lucide-react";
+import { ShoppingCart, Zap, Shield, Star, Plus, Check, Eye } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAdmin } from "@/context/AdminContext";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { ItemDetailsModal } from "./ItemDetailsModal";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -40,12 +41,20 @@ const packages = [
 ];
 
 export function Offerings() {
-  const { products } = useAdmin();
+  const { products, newArrivals: adminNewArrivals } = useAdmin();
   const containerRef = useRef<HTMLDivElement>(null);
   const arrivalsRef = useRef<HTMLDivElement>(null);
   const packagesRef = useRef<HTMLDivElement>(null);
 
-  const newArrivals = products.slice(0, 4); // Just take the first 4 for home page
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openDetails = (item: any) => {
+    setSelectedItem(item);
+    setIsModalOpen(true);
+  };
+
+  const displayNewArrivals = adminNewArrivals.length > 0 ? adminNewArrivals.slice(0, 4) : products.slice(0, 4);
 
   useGSAP(() => {
     // Reveal arrivals
@@ -98,8 +107,8 @@ export function Offerings() {
           </div>
 
           <div className="grid grid-cols-3 lg:grid-cols-4 gap-2 md:gap-8">
-            {newArrivals.map((product, idx) => (
-              <div key={idx} className="arrival-card h-full">
+            {displayNewArrivals.map((product, idx) => (
+              <div key={idx} className="arrival-card h-full cursor-pointer" onClick={() => openDetails(product)}>
                 <Card className="bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group overflow-hidden flex flex-col h-full">
                   <div className="relative aspect-[4/5] overflow-hidden">
                     <Image
@@ -115,10 +124,10 @@ export function Offerings() {
                     </div>
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-1 md:gap-3">
                       <Button size="icon" className="h-6 w-6 md:h-10 md:w-10 rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors">
-                        <ShoppingCart className="h-3 w-3 md:h-5 md:w-5" />
+                        <Eye className="h-3 w-3 md:h-5 md:w-5" />
                       </Button>
                       <Button size="icon" className="h-6 w-6 md:h-10 md:w-10 rounded-full bg-white text-primary hover:bg-primary hover:text-white transition-colors">
-                        <Plus className="h-3 w-3 md:h-5 md:w-5" />
+                        <ShoppingCart className="h-3 w-3 md:h-5 md:w-5" />
                       </Button>
                     </div>
                   </div>
@@ -159,7 +168,13 @@ export function Offerings() {
             {packages.map((pkg, idx) => (
               <div
                 key={idx}
-                className={`package-card relative p-0.5 md:p-1 rounded-lg md:rounded-2xl transition-transform duration-300 hover:-translate-y-2 ${pkg.recommended ? 'bg-gradient-to-b from-primary to-[#01357D] shadow-xl' : 'bg-slate-200'}`}
+                className={`package-card relative p-0.5 md:p-1 rounded-lg md:rounded-2xl transition-transform duration-300 hover:-translate-y-2 cursor-pointer ${pkg.recommended ? 'bg-gradient-to-b from-primary to-[#01357D] shadow-xl' : 'bg-slate-200'}`}
+                onClick={() => openDetails({
+                  ...pkg,
+                  title: pkg.name,
+                  image: "/images/premium_surveillance_set_1776596695342.png", // Fallback image for packages
+                  category: "Security Package"
+                })}
               >
                 {pkg.recommended && (
                   <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-primary text-white text-[6px] md:text-xs font-bold uppercase tracking-widest py-0.5 px-2 md:py-1 md:px-4 rounded-full shadow-lg z-10 whitespace-nowrap">
@@ -194,6 +209,14 @@ export function Offerings() {
         </div>
 
       </div>
+
+      {selectedItem && (
+        <ItemDetailsModal 
+          item={selectedItem} 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+        />
+      )}
     </section>
   );
 }

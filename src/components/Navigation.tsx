@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { 
   Phone, 
@@ -19,6 +20,7 @@ import { AdminLoginModal } from "./admin/AdminLoginModal";
 export function Navigation() {
   const [clickCount, setClickCount] = React.useState(0);
   const [showAdminLogin, setShowAdminLogin] = React.useState(false);
+  const router = useRouter();
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const handleLogoClick = (e: React.MouseEvent) => {
@@ -33,16 +35,19 @@ export function Navigation() {
       setClickCount(0);
     } else {
       timerRef.current = setTimeout(() => {
+        if (newCount === 1) {
+          router.push("/");
+        }
         setClickCount(0);
-      }, 500);
+      }, 300);
     }
   };
 
   const navLinks = [
     { name: "Home", href: "/", icon: Home },
     { name: "Products", href: "/shop#products", icon: Package },
-    { name: "Services", href: "#services", icon: Shield },
-    { name: "Portfolio", href: "#portfolio", icon: SquareLibrary },
+    { name: "Services", href: "/#services", icon: Shield },
+    { name: "Portfolio", href: "/#portfolio", icon: SquareLibrary },
     { name: "Contact", href: "/contact", icon: MessageSquare },
   ];
 

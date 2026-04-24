@@ -8,6 +8,7 @@ export interface Project {
   location: string;
   description: string;
   image: string;
+  images?: string[];
 }
 
 interface AdminContextType {
@@ -19,6 +20,11 @@ interface AdminContextType {
   addProduct: (product: Product) => void;
   updateProduct: (product: Product) => void;
   removeProduct: (id: string) => void;
+  newArrivals: Product[];
+  addNewArrival: (product: Product) => void;
+  updateNewArrival: (product: Product) => void;
+  removeNewArrival: (id: string) => void;
+  moveNewArrivalToProducts: (id: string) => void;
   addProject: (project: Project) => void;
   updateProject: (project: Project) => void;
   removeProject: (title: string) => void;
@@ -56,16 +62,19 @@ const initialProjects: Project[] = [
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [isAdmin, setIsAdmin] = useState(false);
 
   // Load from localStorage
   useEffect(() => {
     const savedProducts = localStorage.getItem("trust_vision_products");
+    const savedNewArrivals = localStorage.getItem("trust_vision_new_arrivals");
     const savedProjects = localStorage.getItem("trust_vision_projects");
     const adminSession = sessionStorage.getItem("trust_vision_admin");
 
     if (savedProducts) setProducts(JSON.parse(savedProducts));
+    if (savedNewArrivals) setNewArrivals(JSON.parse(savedNewArrivals));
     if (savedProjects) setProjects(JSON.parse(savedProjects));
     if (adminSession === "true") setIsAdmin(true);
   }, []);
@@ -74,6 +83,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     localStorage.setItem("trust_vision_products", JSON.stringify(products));
   }, [products]);
+
+  useEffect(() => {
+    localStorage.setItem("trust_vision_new_arrivals", JSON.stringify(newArrivals));
+  }, [newArrivals]);
 
   useEffect(() => {
     localStorage.setItem("trust_vision_projects", JSON.stringify(projects));
@@ -106,6 +119,26 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
+  const addNewArrival = (product: Product) => {
+    setNewArrivals((prev) => [...prev, product]);
+  };
+
+  const updateNewArrival = (updatedProduct: Product) => {
+    setNewArrivals((prev) => prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)));
+  };
+
+  const removeNewArrival = (id: string) => {
+    setNewArrivals((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const moveNewArrivalToProducts = (id: string) => {
+    const itemToMove = newArrivals.find((p) => p.id === id);
+    if (itemToMove) {
+      setProducts((prev) => [...prev, itemToMove]);
+      setNewArrivals((prev) => prev.filter((p) => p.id !== id));
+    }
+  };
+
   const addProject = (project: Project) => {
     setProjects((prev) => [...prev, project]);
   };
@@ -122,6 +155,11 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     <AdminContext.Provider
       value={{
         products,
+        newArrivals,
+        addNewArrival,
+        updateNewArrival,
+        removeNewArrival,
+        moveNewArrivalToProducts,
         projects,
         isAdmin,
         login,
