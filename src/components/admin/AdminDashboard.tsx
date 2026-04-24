@@ -55,6 +55,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     images: [] as string[],
   };
   const [newProject, setNewProject] = useState(initialProject);
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState<'product' | 'new-arrival' | null>(null);
   const [customCategory, setCustomCategory] = useState("");
   
   // New Gallery Form State
