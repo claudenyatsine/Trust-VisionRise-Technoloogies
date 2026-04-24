@@ -62,7 +62,7 @@ const initialProjects: Project[] = [
 
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [products, setProducts] = useState<Product[]>(PRODUCTS);
-  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [newArrivals, setNewArrivals] = useState<Product[]>(PRODUCTS.slice(0, 4));
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -73,9 +73,18 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const savedProjects = localStorage.getItem("trust_vision_projects");
     const adminSession = sessionStorage.getItem("trust_vision_admin");
 
-    if (savedProducts) setProducts(JSON.parse(savedProducts));
-    if (savedNewArrivals) setNewArrivals(JSON.parse(savedNewArrivals));
-    if (savedProjects) setProjects(JSON.parse(savedProjects));
+    if (savedProducts) {
+      const parsed = JSON.parse(savedProducts);
+      if (parsed.length > 0) setProducts(parsed);
+    }
+    if (savedNewArrivals) {
+      const parsed = JSON.parse(savedNewArrivals);
+      if (parsed.length > 0) setNewArrivals(parsed);
+    }
+    if (savedProjects) {
+      const parsed = JSON.parse(savedProjects);
+      if (parsed.length > 0) setProjects(parsed);
+    }
     if (adminSession === "true") setIsAdmin(true);
   }, []);
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Trash2, Package, LayoutGrid, LogOut, Check, Edit2, Sparkles, ArrowRight, Image as ImageIcon, Star } from "lucide-react";
+import { Plus, Trash2, Package, LayoutGrid, LogOut, Check, X, Edit2, Sparkles, ArrowRight, Image as ImageIcon, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,6 +53,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     images: [] as string[],
   };
   const [newProject, setNewProject] = useState(initialProject);
+  const [showNewCategoryInput, setShowNewCategoryInput] = useState<'product' | 'new-arrival' | null>(null);
+  const [customCategory, setCustomCategory] = useState("");
 
   const handleProductSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,7 +159,11 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setActiveTab("new-arrivals");
   };
 
-  const categories = ["CCTV Cameras", "Recording Units", "Smart Home", "Access Control", "Specialized"];
+  const categories = Array.from(new Set([
+    "CCTV Cameras", "Recording Units", "Smart Home", "Access Control", "Specialized",
+    ...products.map(p => p.category),
+    ...newArrivals.map(p => p.category)
+  ])).filter(Boolean).sort();
 
   const handleTabChange = (val: string) => {
     setActiveTab(val);
@@ -168,7 +174,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-white">
+    <div className="flex flex-col h-full bg-white overflow-hidden">
       <div className="p-6 border-b flex items-center justify-between bg-slate-50">
         <div className="flex items-center gap-3">
           <div className="bg-[#01357D] text-white p-2 rounded-lg">
@@ -187,7 +193,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col overflow-hidden">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col min-h-0 overflow-hidden">
         <div className="px-6 py-2 border-b">
           <TabsList className="bg-slate-100 p-1 w-full flex">
             <TabsTrigger value="products" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
@@ -205,7 +211,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           </TabsList>
         </div>
 
-        <ScrollArea className="flex-1 p-6">
+        <ScrollArea className="flex-1 p-6 min-h-0">
           <TabsContent value="products" className="m-0 space-y-8">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
@@ -213,30 +219,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                 {editingId ? "Update Product" : "Add New Product"}
               </h3>
               <form onSubmit={handleProductSubmit} className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 sm:col-span-1">
-                  <Select 
-                    value={editingId || "new"} 
-                    onValueChange={(val) => {
-                      if (val === "new") {
-                        setEditingId(null);
-                        setNewProduct(initialProduct);
-                      } else {
-                        const prod = products.find(p => p.id === val);
-                        if (prod) startEditingProduct(prod);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="Select Product to Edit or Add New" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">-- Add New Product --</SelectItem>
-                      {products.map(p => (
-                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 
                 <Input 
                   placeholder="Product Name" 
@@ -248,16 +230,77 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
                 <Input placeholder="Model Number" value={newProduct.modelNumber} onChange={e => setNewProduct({...newProduct, modelNumber: e.target.value})} required className="bg-white" />
                 
-                <Select value={newProduct.category} onValueChange={(val) => setNewProduct({...newProduct, category: val})}>
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  {showNewCategoryInput === 'product' ? (
+                    <div className="flex gap-2 flex-1">
+                      <Input 
+                        placeholder="Type new category..." 
+                        value={customCategory} 
+                        onChange={e => setCustomCategory(e.target.value)}
+                        className="bg-white"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (customCategory.trim()) {
+                              setNewProduct({...newProduct, category: customCategory.trim()});
+                              setShowNewCategoryInput(null);
+                              setCustomCategory("");
+                            }
+                          }
+                        }}
+                      />
+                      <div className="flex gap-1">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-10 w-10 text-green-600 border-green-200 bg-green-50"
+                          onClick={() => {
+                            if (customCategory.trim()) {
+                              setNewProduct({...newProduct, category: customCategory.trim()});
+                              setShowNewCategoryInput(null);
+                              setCustomCategory("");
+                            }
+                          }}
+                        >
+                          <Check size={16} />
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-10 w-10 text-slate-400 border-slate-200 bg-slate-50"
+                          onClick={() => setShowNewCategoryInput(null)}
+                        >
+                          <X size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Select value={newProduct.category} onValueChange={(val) => {
+                      if (val === "add_new") {
+                        setShowNewCategoryInput('product');
+                      } else {
+                        setNewProduct({...newProduct, category: val});
+                      }
+                    }}>
+                      <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Select Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(cat => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                        <div className="border-t mt-1 pt-1">
+                          <SelectItem value="add_new" className="text-[#01357D] font-bold">
+                            + Add Category
+                          </SelectItem>
+                        </div>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
 
                 <Input placeholder="Tag (e.g. New, Best Seller)" value={newProduct.tag} onChange={e => setNewProduct({...newProduct, tag: e.target.value})} className="bg-white" />
                 <div className="col-span-2">
@@ -351,30 +394,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                 {editingId ? "Update New Arrival" : "Add New Arrival"}
               </h3>
               <form onSubmit={handleNewArrivalSubmit} className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 sm:col-span-1">
-                  <Select 
-                    value={editingId || "new"} 
-                    onValueChange={(val) => {
-                      if (val === "new") {
-                        setEditingId(null);
-                        setNewNewArrival(initialProduct);
-                      } else {
-                        const item = newArrivals.find(p => p.id === val);
-                        if (item) startEditingNewArrival(item);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="Select Item to Edit or Add New" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">-- Add New Arrival --</SelectItem>
-                      {newArrivals.map(p => (
-                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
                 
                 <Input 
                   placeholder="Service/Product Name" 
@@ -386,16 +405,77 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
                 <Input placeholder="Model/Ref Number" value={newNewArrival.modelNumber} onChange={e => setNewNewArrival({...newNewArrival, modelNumber: e.target.value})} required className="bg-white" />
                 
-                <Select value={newNewArrival.category} onValueChange={(val) => setNewNewArrival({...newNewArrival, category: val})}>
-                  <SelectTrigger className="bg-white">
-                    <SelectValue placeholder="Select Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(cat => (
-                      <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                  {showNewCategoryInput === 'new-arrival' ? (
+                    <div className="flex gap-2 flex-1">
+                      <Input 
+                        placeholder="Type new category..." 
+                        value={customCategory} 
+                        onChange={e => setCustomCategory(e.target.value)}
+                        className="bg-white"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            if (customCategory.trim()) {
+                              setNewNewArrival({...newNewArrival, category: customCategory.trim()});
+                              setShowNewCategoryInput(null);
+                              setCustomCategory("");
+                            }
+                          }
+                        }}
+                      />
+                      <div className="flex gap-1">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-10 w-10 text-green-600 border-green-200 bg-green-50"
+                          onClick={() => {
+                            if (customCategory.trim()) {
+                              setNewNewArrival({...newNewArrival, category: customCategory.trim()});
+                              setShowNewCategoryInput(null);
+                              setCustomCategory("");
+                            }
+                          }}
+                        >
+                          <Check size={16} />
+                        </Button>
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-10 w-10 text-slate-400 border-slate-200 bg-slate-50"
+                          onClick={() => setShowNewCategoryInput(null)}
+                        >
+                          <X size={16} />
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <Select value={newNewArrival.category} onValueChange={(val) => {
+                      if (val === "add_new") {
+                        setShowNewCategoryInput('new-arrival');
+                      } else {
+                        setNewNewArrival({...newNewArrival, category: val});
+                      }
+                    }}>
+                      <SelectTrigger className="bg-white">
+                        <SelectValue placeholder="Select Category" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {categories.map(cat => (
+                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        ))}
+                        <div className="border-t mt-1 pt-1">
+                          <SelectItem value="add_new" className="text-[#01357D] font-bold">
+                            + Add Category
+                          </SelectItem>
+                        </div>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
 
                 <Input placeholder="Tag (e.g. Just In, Limited)" value={newNewArrival.tag} onChange={e => setNewNewArrival({...newNewArrival, tag: e.target.value})} className="bg-white" />
                 <div className="col-span-2">
@@ -507,30 +587,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                 {editingId ? "Update Project" : "Register New Project"}
               </h3>
               <form onSubmit={handleProjectSubmit} className="grid grid-cols-2 gap-4">
-                <div className="col-span-2 sm:col-span-1">
-                  <Select 
-                    value={editingId || "new"} 
-                    onValueChange={(val) => {
-                      if (val === "new") {
-                        setEditingId(null);
-                        setNewProject(initialProject);
-                      } else {
-                        const proj = projects.find(p => p.title === val);
-                        if (proj) startEditingProject(proj);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="Select Project to Edit or Add New" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="new">-- Add New Project --</SelectItem>
-                      {projects.map(p => (
-                        <SelectItem key={p.title} value={p.title}>{p.title}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 <Input 
                   placeholder="Project Title" 

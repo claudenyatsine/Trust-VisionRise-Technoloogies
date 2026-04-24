@@ -48,7 +48,6 @@ export function Navigation() {
     { name: "Products", href: "/shop#products", icon: Package },
     { name: "Services", href: "/#services", icon: Shield },
     { name: "Portfolio", href: "/#portfolio", icon: SquareLibrary },
-    { name: "Gallery", href: "/gallery", icon: Info },
     { name: "Contact", href: "/contact", icon: MessageSquare },
   ];
 
