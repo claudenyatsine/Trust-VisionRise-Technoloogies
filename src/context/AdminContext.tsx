@@ -2,13 +2,24 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { PRODUCTS, Product } from "@/lib/products";
+import { supabase } from "@/lib/supabase";
 
 export interface Project {
+  id?: string;
   title: string;
   location: string;
   description: string;
   image: string;
   images?: string[];
+  created_at?: string;
+}
+
+export interface GalleryImage {
+  id?: string;
+  image_url: string;
+  description: string;
+  category?: string;
+  created_at?: string;
 }
 
 export interface GalleryItem {
@@ -31,20 +42,25 @@ export interface DownloadableFile {
 interface AdminContextType {
   products: Product[];
   projects: Project[];
+  galleryImages: GalleryImage[];
   isAdmin: boolean;
   login: (password: string) => boolean;
   logout: () => void;
-  addProduct: (product: Product) => void;
-  updateProduct: (product: Product) => void;
-  removeProduct: (id: string) => void;
+  addProduct: (product: Product) => Promise<void>;
+  updateProduct: (product: Product) => Promise<void>;
+  removeProduct: (id: string) => Promise<void>;
   newArrivals: Product[];
-  addNewArrival: (product: Product) => void;
-  updateNewArrival: (product: Product) => void;
-  removeNewArrival: (id: string) => void;
-  moveNewArrivalToProducts: (id: string) => void;
-  addProject: (project: Project) => void;
-  updateProject: (project: Project) => void;
-  removeProject: (title: string) => void;
+  addNewArrival: (product: Product) => Promise<void>;
+  updateNewArrival: (product: Product) => Promise<void>;
+  removeNewArrival: (id: string) => Promise<void>;
+  moveNewArrivalToProducts: (id: string) => Promise<void>;
+  addProject: (project: Project) => Promise<void>;
+  updateProject: (project: Project) => Promise<void>;
+  removeProject: (id: string) => Promise<void>;
+  addGalleryImage: (image: GalleryImage) => Promise<void>;
+  removeGalleryImage: (id: string) => Promise<void>;
+  refreshData: () => Promise<void>;
+  // Local/Legacy Gallery & Downloads
   gallery: GalleryItem[];
   addGalleryItem: (item: GalleryItem) => void;
   updateGalleryItem: (item: GalleryItem) => void;
@@ -57,63 +73,73 @@ interface AdminContextType {
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
-// Initial projects from Portfolio.tsx
-const initialProjects: Project[] = [
-  {
-    title: "Global Logistics Hub",
-    location: "Chicago, IL",
-    description: "Full-scale 4K IP surveillance for a 200,000 sq ft warehouse facility.",
-    image: "portfolio-warehouse",
-  },
-  {
-    title: "Metro Shopping Plaza",
-    location: "Austin, TX",
-    description: "Integrated AI loss prevention and perimeter monitoring for 40+ retail units.",
-    image: "portfolio-retail",
-  },
-  {
-    title: "The Summit Estates",
-    location: "Aspen, CO",
-    description: "Private thermal imaging and laser-tripwire security for a premier residential community.",
-    image: "portfolio-estate",
-  },
-  {
-    title: "Downtown Financial District",
-    location: "New York, NY",
-    description: "Advanced facial recognition and access control for high-rise office complex.",
-    image: "portfolio-office",
-  },
-];
-
 export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>(PRODUCTS);
-  const [newArrivals, setNewArrivals] = useState<Product[]>(PRODUCTS.slice(0, 4));
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [newArrivals, setNewArrivals] = useState<Product[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [downloads, setDownloads] = useState<DownloadableFile[]>([]);
 
-  // Load from localStorage
+  const refreshData = async () => {
+    try {
+      // Fetch products
+      const { data: productsData, error: productsError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_new_arrival', false)
+        .order('created_at', { ascending: false });
+
+      if (productsError) throw productsError;
+      setProducts((productsData || []).map((p: any) => ({
+        ...p,
+        modelNumber: p.model_number
+      })));
+
+      // Fetch new arrivals
+      const { data: newArrivalsData, error: newArrivalsError } = await supabase
+        .from('products')
+        .select('*')
+        .eq('is_new_arrival', true)
+        .order('created_at', { ascending: false });
+
+      if (newArrivalsError) throw newArrivalsError;
+      setNewArrivals((newArrivalsData || []).map((p: any) => ({
+        ...p,
+        modelNumber: p.model_number
+      })));
+
+      // Fetch projects
+      const { data: projectsData, error: projectsError } = await supabase
+        .from('projects')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (projectsError) throw projectsError;
+      setProjects(projectsData || []);
+
+      // Fetch gallery images
+      const { data: galleryData, error: galleryError } = await supabase
+        .from('gallery_images')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (galleryError) throw galleryError;
+      setGalleryImages(galleryData || []);
+    } catch (error: any) {
+      console.error("Error refreshing data from Supabase:", error?.message || error);
+    }
+  };
+
   useEffect(() => {
-    const savedProducts = localStorage.getItem("trust_vision_products");
-    const savedNewArrivals = localStorage.getItem("trust_vision_new_arrivals");
-    const savedProjects = localStorage.getItem("trust_vision_projects");
+    refreshData();
+    const adminSession = sessionStorage.getItem("trust_vision_admin");
+    if (adminSession === "true") setIsAdmin(true);
+
+    // LocalStorage fallbacks
     const savedGallery = localStorage.getItem("trust_vision_gallery");
     const savedDownloads = localStorage.getItem("trust_vision_downloads");
-    const adminSession = sessionStorage.getItem("trust_vision_admin");
-
-    if (savedProducts) {
-      const parsed = JSON.parse(savedProducts);
-      if (parsed.length > 0) setProducts(parsed);
-    }
-    if (savedNewArrivals) {
-      const parsed = JSON.parse(savedNewArrivals);
-      if (parsed.length > 0) setNewArrivals(parsed);
-    }
-    if (savedProjects) {
-      const parsed = JSON.parse(savedProjects);
-      if (parsed.length > 0) setProjects(parsed);
-    }
     if (savedGallery) {
       const parsed = JSON.parse(savedGallery);
       if (parsed.length > 0) setGallery(parsed);
@@ -122,22 +148,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const parsed = JSON.parse(savedDownloads);
       if (parsed.length > 0) setDownloads(parsed);
     }
-    if (adminSession === "true") setIsAdmin(true);
   }, []);
 
-  // Save to localStorage
-  useEffect(() => {
-    localStorage.setItem("trust_vision_products", JSON.stringify(products));
-  }, [products]);
-
-  useEffect(() => {
-    localStorage.setItem("trust_vision_new_arrivals", JSON.stringify(newArrivals));
-  }, [newArrivals]);
-
-  useEffect(() => {
-    localStorage.setItem("trust_vision_projects", JSON.stringify(projects));
-  }, [projects]);
-
+  // Save LocalStorage items
   useEffect(() => {
     localStorage.setItem("trust_vision_gallery", JSON.stringify(gallery));
   }, [gallery]);
@@ -147,7 +160,6 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [downloads]);
 
   const login = (password: string) => {
-    // Simple hardcoded password for the "backdoor"
     if (password === "12345678") {
       setIsAdmin(true);
       sessionStorage.setItem("trust_vision_admin", "true");
@@ -161,50 +173,200 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     sessionStorage.removeItem("trust_vision_admin");
   };
 
-  const addProduct = (product: Product) => {
-    setProducts((prev) => [...prev, product]);
-  };
-
-  const updateProduct = (updatedProduct: Product) => {
-    setProducts((prev) => prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)));
-  };
-
-  const removeProduct = (id: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const addNewArrival = (product: Product) => {
-    setNewArrivals((prev) => [...prev, product]);
-  };
-
-  const updateNewArrival = (updatedProduct: Product) => {
-    setNewArrivals((prev) => prev.map((p) => (p.id === updatedProduct.id ? updatedProduct : p)));
-  };
-
-  const removeNewArrival = (id: string) => {
-    setNewArrivals((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const moveNewArrivalToProducts = (id: string) => {
-    const itemToMove = newArrivals.find((p) => p.id === id);
-    if (itemToMove) {
-      setProducts((prev) => [...prev, itemToMove]);
-      setNewArrivals((prev) => prev.filter((p) => p.id !== id));
+  const addProduct = async (product: Product) => {
+    const { error } = await supabase
+      .from('products')
+      .insert([{ 
+        name: product.name,
+        model_number: product.modelNumber,
+        description: product.description,
+        category: product.category,
+        image: product.image,
+        images: product.images,
+        tag: product.tag,
+        is_new_arrival: false
+      }]);
+    
+    if (error) {
+      console.error("Error adding product:", error);
+      throw error;
     }
+    await refreshData();
   };
 
-  const addProject = (project: Project) => {
-    setProjects((prev) => [...prev, project]);
+  const updateProduct = async (product: Product) => {
+    const { error } = await supabase
+      .from('products')
+      .update({ 
+        name: product.name,
+        model_number: product.modelNumber,
+        description: product.description,
+        category: product.category,
+        image: product.image,
+        images: product.images,
+        tag: product.tag
+      })
+      .eq('id', product.id);
+
+    if (error) {
+      console.error("Error updating product:", error);
+      throw error;
+    }
+    await refreshData();
   };
 
-  const updateProject = (updatedProject: Project) => {
-    setProjects((prev) => prev.map((p) => (p.title === updatedProject.title ? updatedProject : p)));
+  const removeProduct = async (id: string) => {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error removing product:", error);
+      throw error;
+    }
+    await refreshData();
   };
 
-  const removeProject = (title: string) => {
-    setProjects((prev) => prev.filter((p) => p.title !== title));
+  const addNewArrival = async (product: Product) => {
+    const { error } = await supabase
+      .from('products')
+      .insert([{ 
+        name: product.name,
+        model_number: product.modelNumber,
+        description: product.description,
+        category: product.category,
+        image: product.image,
+        images: product.images,
+        tag: product.tag,
+        is_new_arrival: true
+      }]);
+
+    if (error) {
+      console.error("Error adding new arrival:", error);
+      throw error;
+    }
+    await refreshData();
   };
 
+  const updateNewArrival = async (product: Product) => {
+    const { error } = await supabase
+      .from('products')
+      .update({ 
+        name: product.name,
+        model_number: product.modelNumber,
+        description: product.description,
+        category: product.category,
+        image: product.image,
+        images: product.images,
+        tag: product.tag
+      })
+      .eq('id', product.id);
+
+    if (error) {
+      console.error("Error updating new arrival:", error);
+      throw error;
+    }
+    await refreshData();
+  };
+
+  const removeNewArrival = async (id: string) => {
+    await removeProduct(id);
+  };
+
+  const moveNewArrivalToProducts = async (id: string) => {
+    const { error } = await supabase
+      .from('products')
+      .update({ is_new_arrival: false })
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error moving new arrival to products:", error);
+      throw error;
+    }
+    await refreshData();
+  };
+
+  const addProject = async (project: Project) => {
+    const { error } = await supabase
+      .from('projects')
+      .insert([{ 
+        title: project.title,
+        location: project.location,
+        description: project.description,
+        image: project.image,
+        images: project.images
+      }]);
+
+    if (error) {
+      console.error("Error adding project:", error);
+      throw error;
+    }
+    await refreshData();
+  };
+
+  const updateProject = async (project: Project) => {
+    const { error } = await supabase
+      .from('projects')
+      .update({ 
+        title: project.title,
+        location: project.location,
+        description: project.description,
+        image: project.image,
+        images: project.images
+      })
+      .eq('id', project.id);
+
+    if (error) {
+      console.error("Error updating project:", error);
+      throw error;
+    }
+    await refreshData();
+  };
+
+  const removeProject = async (id: string) => {
+    const { error } = await supabase
+      .from('projects')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error removing project:", error);
+      throw error;
+    }
+    await refreshData();
+  };
+
+  const addGalleryImage = async (image: GalleryImage) => {
+    const { error } = await supabase
+      .from('gallery_images')
+      .insert([{ 
+        image_url: image.image_url,
+        description: image.description,
+        category: image.category
+      }]);
+    
+    if (error) {
+      console.error("Error adding gallery image:", error);
+      throw error;
+    }
+    await refreshData();
+  };
+
+  const removeGalleryImage = async (id: string) => {
+    const { error } = await supabase
+      .from('gallery_images')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error("Error removing gallery image:", error);
+      throw error;
+    }
+    await refreshData();
+  };
+
+  // Legacy/Local Methods
   const addGalleryItem = (item: GalleryItem) => {
     setGallery((prev) => [...prev, item]);
   };
@@ -239,6 +401,7 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         removeNewArrival,
         moveNewArrivalToProducts,
         projects,
+        galleryImages,
         isAdmin,
         login,
         logout,
@@ -248,6 +411,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addProject,
         updateProject,
         removeProject,
+        addGalleryImage,
+        removeGalleryImage,
+        refreshData,
         gallery,
         addGalleryItem,
         updateGalleryItem,

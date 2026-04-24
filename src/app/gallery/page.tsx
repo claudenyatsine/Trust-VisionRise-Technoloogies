@@ -15,6 +15,7 @@ import { useAdmin } from "@/context/AdminContext";
 export default function GalleryPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { galleryImages: dbImages } = useAdmin();
 
   useGSAP(() => {
     gsap.from(".gallery-item", {
@@ -26,7 +27,10 @@ export default function GalleryPage() {
     });
   }, { scope: containerRef });
 
-  const galleryImages = PlaceHolderImages.filter(img => img.id.startsWith('portfolio-') || img.id.startsWith('service-'));
+  // Use DB images if available, otherwise fallback to placeholders filtered for gallery
+  const galleryImages = dbImages.length > 0 
+    ? dbImages.map(img => ({ image: img.image_url, title: img.description, category: img.category || 'CCTV' }))
+    : PlaceHolderImages.filter(img => img.id.startsWith('portfolio-') || img.id.startsWith('service-')).map(img => ({ image: img.imageUrl, title: img.description, category: img.id.split('-')[1] }));
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">

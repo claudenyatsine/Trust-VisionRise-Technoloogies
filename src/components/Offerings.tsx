@@ -59,10 +59,10 @@ export function Offerings() {
   useGSAP(() => {
     // Reveal arrivals
     gsap.from(".arrival-card", {
-      y: 60,
+      y: 40,
       opacity: 0,
-      duration: 1,
-      stagger: 0.15,
+      duration: 0.6,
+      stagger: 0.1,
       ease: "power2.out",
       scrollTrigger: {
         trigger: arrivalsRef.current,
@@ -72,11 +72,11 @@ export function Offerings() {
 
     // Reveal packages
     gsap.from(".package-card", {
-      scale: 0.9,
+      scale: 0.95,
       opacity: 0,
-      duration: 1.2,
-      stagger: 0.2,
-      ease: "back.out(1.7)",
+      duration: 0.7,
+      stagger: 0.1,
+      ease: "back.out(1.2)",
       scrollTrigger: {
         trigger: packagesRef.current,
         start: "top 85%",
