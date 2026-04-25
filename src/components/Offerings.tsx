@@ -115,6 +115,7 @@ export function Offerings() {
                       src={product.image}
                       alt={product.name}
                       fill
+                      unoptimized
                       className="object-cover group-hover:scale-110 transition-transform duration-700"
                     />
                     <div className="absolute top-1 left-1 md:top-4 md:left-4">

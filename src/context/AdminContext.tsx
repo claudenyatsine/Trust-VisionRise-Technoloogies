@@ -50,7 +50,6 @@ interface AdminContextType {
   updateProduct: (product: Product) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   newArrivals: Product[];
-<<<<<<< HEAD
   addNewArrival: (product: Product) => Promise<void>;
   updateNewArrival: (product: Product) => Promise<void>;
   removeNewArrival: (id: string) => Promise<void>;
@@ -142,7 +141,15 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         .order('created_at', { ascending: false });
 
       if (downloadsError) throw downloadsError;
-      setDownloads(downloadsData || []);
+      setDownloads((downloadsData || []).map((d: any) => ({
+        id: d.id,
+        title: d.title,
+        description: d.description,
+        fileSize: d.file_size,
+        fileType: d.file_type,
+        downloadUrl: d.download_url,
+        category: d.category
+      })));
     } catch (error: any) {
       console.error("Error refreshing data from Supabase:", error?.message || error);
     }
@@ -151,20 +158,8 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     refreshData();
     const adminSession = sessionStorage.getItem("trust_vision_admin");
-    const savedDownloads = localStorage.getItem("trust_vision_downloads");
-    
-    if (savedDownloads) {
-      const parsed = JSON.parse(savedDownloads);
-      if (parsed.length > 0) setDownloads(parsed);
-    }
-    
     if (adminSession === "true") setIsAdmin(true);
   }, []);
-
-  // Sync downloads to localStorage (as fallback since we don't have a table yet)
-  useEffect(() => {
-    localStorage.setItem("trust_vision_downloads", JSON.stringify(downloads));
-  }, [downloads]);
 
   const login = (password: string) => {
     if (password === "12345678") {
@@ -400,9 +395,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           title: file.title,
           category: file.category,
           description: file.description,
-          fileSize: file.fileSize,
-          downloadUrl: file.downloadUrl,
-          fileType: file.fileType
+          file_size: file.fileSize,
+          download_url: file.downloadUrl,
+          file_type: file.fileType
         }]);
 
       if (error) throw error;
@@ -421,9 +416,9 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
           title: updatedFile.title,
           category: updatedFile.category,
           description: updatedFile.description,
-          fileSize: updatedFile.fileSize,
-          downloadUrl: updatedFile.downloadUrl,
-          fileType: updatedFile.fileType
+          file_size: updatedFile.fileSize,
+          download_url: updatedFile.downloadUrl,
+          file_type: updatedFile.fileType
         })
         .eq('id', updatedFile.id);
 

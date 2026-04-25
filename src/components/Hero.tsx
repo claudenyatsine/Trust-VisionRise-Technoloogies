@@ -71,11 +71,11 @@ export function Hero() {
         <div ref={textRef} className="max-w-4xl text-left space-y-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-sm font-bold uppercase tracking-wider">
             <ShieldCheck className="w-4 h-4" />
-            Trusted Surveillance Experts
+            MASTERS IN CCTV
           </div>
 
           <h1 className="text-4xl md:text-6xl lg:text-8xl font-headline font-bold leading-tight text-white uppercase tracking-tighter">
-            Uncompromising <span>Security</span> <br /> For Your Business.
+            Special Prices <span><br />$85 To $650</span> <br /> {/*For Your Business.*/}
           </h1>
 
           <p className="text-xl text-slate-300 max-w-2xl leading-relaxed">

@@ -52,36 +52,44 @@ export default function GalleryPage() {
           </div>
 
           <div ref={containerRef} className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-            {displayImages.map((img, idx) => (
-              <div 
-                key={idx} 
-                className="gallery-item relative group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-lg break-inside-avoid transition-all duration-500 hover:shadow-2xl"
-                onClick={() => setSelectedImage(img.image)}
-              >
-                <div className="relative w-full aspect-auto min-h-[200px]">
-                  <Image
-                    src={img.image}
-                    alt={img.title}
-                    width={600}
-                    height={400}
-                    className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#01357D]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
-                    <Badge className="w-fit mb-2 bg-primary text-white uppercase text-[10px] tracking-widest font-bold">
-                      {img.category}
-                    </Badge>
-                    <p className="text-white font-bold text-sm uppercase tracking-tight">
-                      {img.title}
-                    </p>
-                  </div>
-                  <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <div className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white">
-                      <Maximize2 size={18} />
+            {displayImages.map((img, idx) => {
+              // Resolve image source
+              const imageSrc = img.image.startsWith('http') || img.image.startsWith('/') || img.image.startsWith('data:') 
+                ? img.image 
+                : (PlaceHolderImages.find(p => p.id === img.image)?.imageUrl || "/logo.png");
+
+              return (
+                <div 
+                  key={idx} 
+                  className="gallery-item relative group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-lg break-inside-avoid transition-all duration-500 hover:shadow-2xl"
+                  onClick={() => setSelectedImage(imageSrc)}
+                >
+                  <div className="relative w-full aspect-auto min-h-[200px]">
+                    <Image
+                      src={imageSrc}
+                      alt={img.title}
+                      width={600}
+                      height={400}
+                      unoptimized
+                      className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#01357D]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                      <Badge className="w-fit mb-2 bg-primary text-white uppercase text-[10px] tracking-widest font-bold">
+                        {img.category}
+                      </Badge>
+                      <p className="text-white font-bold text-sm uppercase tracking-tight">
+                        {img.title}
+                      </p>
+                    </div>
+                    <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <div className="p-2 bg-white/20 backdrop-blur-md rounded-full text-white">
+                        <Maximize2 size={18} />
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </main>
@@ -103,6 +111,7 @@ export default function GalleryPage() {
               src={selectedImage}
               alt="Gallery Preview"
               fill
+              unoptimized
               className="object-contain"
             />
           </div>

@@ -129,9 +129,10 @@ export function Portfolio() {
                         <Card className="flex h-full flex-col bg-white border-0 shadow-xl hover:shadow-2xl transition-all duration-500 group overflow-hidden rounded-3xl relative">
                           <div className="relative aspect-[16/10] overflow-hidden">
                             <Image
-                              src={project.image.startsWith('data:') || project.image.startsWith('/') || project.image.startsWith('http') ? project.image : (PlaceHolderImages.find(p => p.id === project.image)?.imageUrl || "")}
+                              src={project.image.startsWith('http') || project.image.startsWith('/') || project.image.startsWith('data:') ? project.image : (PlaceHolderImages.find(p => p.id === project.image)?.imageUrl || "/logo.png")}
                               alt={project.title}
                               fill
+                              unoptimized
                               className="object-cover transition-transform duration-1000 group-hover:scale-110"
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-[#01357D]/80 via-transparent to-transparent opacity-60" />

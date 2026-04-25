@@ -29,10 +29,10 @@ export default function ContactPage() {
                   <div className="h-12 w-12 rounded bg-primary/10 flex items-center justify-center">
                     <item.icon className="h-6 w-6 text-primary" />
                   </div>
-                  <div>
+                  <div className="w-full text-center">
                     <h4 className="text-[#01357D] font-bold mb-2 uppercase tracking-wider text-sm">{item.title}</h4>
                     {item.lines.map((line, li) => (
-                      <p key={li} className="text-[#01357D] text-sm">{line}</p>
+                      <p key={li} className="text-[#01357D] text-sm break-all">{line}</p>
                     ))}
                   </div>
                 </div>

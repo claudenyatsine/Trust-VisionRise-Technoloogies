@@ -47,7 +47,7 @@ export function Navigation() {
   const navLinks = [
     { name: "Home", href: "/", icon: Home },
     { name: "Products", href: "/shop#products", icon: Package },
-    { name: "Gallery", href: "/gallery", icon: ImageIcon },
+    { name: "Services", href: "/#services", icon: Shield },
     { name: "Resources", href: "/downloads", icon: Download },
     { name: "Contact", href: "/contact", icon: MessageSquare },
   ];

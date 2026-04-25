@@ -23,6 +23,9 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const { 
+    products, addProduct, updateProduct, removeProduct,
+    newArrivals, addNewArrival, updateNewArrival, removeNewArrival, moveNewArrivalToProducts,
+    projects, addProject, updateProject, removeProject,
     gallery, addGalleryItem, updateGalleryItem, removeGalleryItem,
     downloads, addDownload, updateDownload, removeDownload,
     logout 
@@ -805,31 +808,37 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
             <div className="space-y-3">
               <h3 className="font-bold text-slate-400 uppercase tracking-widest text-[10px]">Current Portfolio</h3>
-              {projects.map((project, idx) => (
-                <div key={idx} className="flex items-center justify-between p-4 bg-white border rounded-lg hover:shadow-md transition-shadow group">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 flex items-center justify-center bg-slate-100 rounded text-slate-400 overflow-hidden">
-                      {project.image ? (
-                        <img src={project.image} alt={project.title} className="w-full h-full object-cover" />
-                      ) : (
-                        <LayoutGrid size={20} />
-                      )}
+              {projects.map((project, idx) => {
+                const imageSrc = project.image && (project.image.startsWith('http') || project.image.startsWith('/') || project.image.startsWith('data:'))
+                  ? project.image 
+                  : (PlaceHolderImages.find(p => p.id === project.image)?.imageUrl || null);
+                  
+                return (
+                  <div key={idx} className="flex items-center justify-between p-4 bg-white border rounded-lg hover:shadow-md transition-shadow group">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 flex items-center justify-center bg-slate-100 rounded text-slate-400 overflow-hidden">
+                        {imageSrc ? (
+                          <img src={imageSrc} alt={project.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <LayoutGrid size={20} />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-[#01357D] text-sm">{project.title}</h4>
+                        <p className="text-[10px] text-slate-400 uppercase tracking-wider">{project.location}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-bold text-[#01357D] text-sm">{project.title}</h4>
-                      <p className="text-[10px] text-slate-400 uppercase tracking-wider">{project.location}</p>
+                    <div className="flex gap-1">
+                      <Button variant="ghost" size="icon" onClick={() => startEditingProject(project)} className="text-slate-300 hover:text-[#01357D] hover:bg-slate-50">
+                        <Edit2 size={16} />
+                      </Button>
+                      <Button variant="ghost" size="icon" onClick={() => removeProject(project.id!)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
+                        <Trash2 size={18} />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex gap-1">
-                    <Button variant="ghost" size="icon" onClick={() => startEditingProject(project)} className="text-slate-300 hover:text-[#01357D] hover:bg-slate-50">
-                      <Edit2 size={16} />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => removeProject(project.id!)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
-                      <Trash2 size={18} />
-                    </Button>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </TabsContent>
 
@@ -866,7 +875,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         <img src={newGalleryItem.image} alt="Preview" className="w-full h-full object-cover" />
                       </div>
                     )}
-                    <label className={`flex-1 h-24 rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all overflow-hidden group ${isUploading ? 'opacity-50' : ''}`}>
+                    <label className={`relative flex-1 h-24 rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all overflow-hidden group ${isUploading ? 'opacity-50' : ''}`}>
                       {newGalleryItem.image && (
                         <img src={newGalleryItem.image} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity" />
                       )}
@@ -891,22 +900,28 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {gallery.map((item) => (
-                <div key={item.id} className="group relative aspect-square rounded-xl overflow-hidden border bg-white">
-                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                    <p className="text-white font-bold text-[10px] uppercase text-center px-2">{item.title}</p>
-                    <div className="flex gap-2">
-                      <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => startEditingGalleryItem(item)}>
-                        <Edit2 size={14} />
-                      </Button>
-                      <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => removeGalleryItem(item.id)}>
-                        <Trash2 size={14} />
-                      </Button>
+              {gallery.map((item) => {
+                const imageSrc = item.image.startsWith('http') || item.image.startsWith('/') || item.image.startsWith('data:') 
+                  ? item.image 
+                  : (PlaceHolderImages.find(p => p.id === item.image)?.imageUrl || "/logo.png");
+                  
+                return (
+                  <div key={item.id} className="group relative aspect-square rounded-xl overflow-hidden border bg-white">
+                    <img src={imageSrc} alt={item.title} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                      <p className="text-white font-bold text-[10px] uppercase text-center px-2">{item.title}</p>
+                      <div className="flex gap-2">
+                        <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => startEditingGalleryItem(item)}>
+                          <Edit2 size={14} />
+                        </Button>
+                        <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => removeGalleryItem(item.id)}>
+                          <Trash2 size={14} />
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </TabsContent>
 
@@ -943,7 +958,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     className="bg-white" 
                   />
                 </div>
-                <Input 
                 <div className="col-span-2">
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Resource File</label>
                   <div className="flex gap-4 items-center">

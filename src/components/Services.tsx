@@ -137,6 +137,7 @@ export function Services() {
                       src={img?.imageUrl || ""}
                       alt={service.title}
                       fill
+                      unoptimized
                       className="object-cover group-hover:scale-110 transition-transform duration-700"
                       data-ai-hint={img?.imageHint}
                     />

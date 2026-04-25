@@ -13,6 +13,7 @@ import { ShoppingCart, Check, X, ChevronLeft, ChevronRight, MapPin, Tag, Info } 
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useRef, useEffect } from "react";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 interface ItemDetailsModalProps {
   item: any;
@@ -66,17 +67,23 @@ export function ItemDetailsModal({ item, isOpen, onClose }: ItemDetailsModalProp
                 className="absolute inset-0 flex overflow-x-auto snap-x snap-mandatory no-scrollbar"
                 style={{ scrollBehavior: 'smooth' }}
               >
-                {images.map((img: string, idx: number) => (
-                  <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
-                    {img && (
-                      <img 
-                        src={img} 
-                        alt={`${item.name || item.title} - Image ${idx + 1}`} 
-                        className="w-full h-full object-cover" 
-                      />
-                    )}
-                  </div>
-                ))}
+                {images.map((img: string, idx: number) => {
+                  const imageSrc = img && (img.startsWith('http') || img.startsWith('/') || img.startsWith('data:'))
+                    ? img 
+                    : (PlaceHolderImages.find(p => p.id === img)?.imageUrl || "/logo.png");
+                    
+                  return (
+                    <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
+                      {imageSrc && (
+                        <img 
+                          src={imageSrc} 
+                          alt={`${item.name || item.title} - Image ${idx + 1}`} 
+                          className="w-full h-full object-cover" 
+                        />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
               
               {images.length > 1 && (
@@ -113,15 +120,21 @@ export function ItemDetailsModal({ item, isOpen, onClose }: ItemDetailsModalProp
             {/* Thumbnails */}
             {images.length > 1 && (
               <div className="p-4 bg-white/50 backdrop-blur-sm flex gap-2 overflow-x-auto no-scrollbar">
-                {images.map((img: string, idx: number) => (
-                  <button
-                    key={idx}
-                    onClick={() => scrollToImage(idx)}
-                    className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${activeImageIndex === idx ? 'border-[#01357D] shadow-md scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`}
-                  >
-                    <img src={img} alt="Thumbnail" className="w-full h-full object-cover" />
-                  </button>
-                ))}
+                {images.map((img: string, idx: number) => {
+                  const imageSrc = img && (img.startsWith('http') || img.startsWith('/') || img.startsWith('data:'))
+                    ? img 
+                    : (PlaceHolderImages.find(p => p.id === img)?.imageUrl || "/logo.png");
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => scrollToImage(idx)}
+                      className={`relative w-16 h-16 rounded-lg overflow-hidden border-2 transition-all flex-shrink-0 ${activeImageIndex === idx ? 'border-[#01357D] shadow-md scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                    >
+                      <img src={imageSrc} alt="Thumbnail" className="w-full h-full object-cover" />
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
