@@ -5,6 +5,9 @@ import { SmoothScrolling } from "@/components/providers/SmoothScrolling";
 export const metadata: Metadata = {
   title: "GuardianSight Solutions | Professional CCTV Installation",
   description: "Expert industrial-grade surveillance and CCTV installation services for home and business.",
+  icons: {
+    icon: "/logo.png",
+  },
 };
 export default function RootLayout({
   children,
