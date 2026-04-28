@@ -55,7 +55,7 @@ export function Navigation() {
                   {link.name}
                 </Link>
               ))}
-              <Link href="https://wa.me/2637713012399" target="_blank" rel="noopener noreferrer">
+              <Link href="https://wa.me/263713012399" target="_blank" rel="noopener noreferrer">
                 <Button variant="default" className="gap-2 font-bold uppercase tracking-wider bg-[#01357D] text-white shadow-lg hover:shadow-xl transition-shadow">
                   <Phone className="h-4 w-4" />
                   Get Quote
@@ -80,7 +80,7 @@ export function Navigation() {
             Trust-VisionRise
           </span>
         </Link>
-        <Link href="https://wa.me/2637713012399" target="_blank" rel="noopener noreferrer">
+        <Link href="https://wa.me/263713012399" target="_blank" rel="noopener noreferrer">
           <Button size="sm" className="bg-[#01357D] rounded-full h-9 w-9 p-0 flex items-center justify-center">
             <Phone className="h-4 w-4 text-white" />
           </Button>
