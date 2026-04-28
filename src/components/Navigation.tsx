@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 export function Navigation() {
   const navLinks = [
     { name: "Home", href: "/", icon: Home },
-    { name: "Products", href: "#products", icon: Package },
+    { name: "Products", href: "/shop#products", icon: Package },
     { name: "Services", href: "#services", icon: Shield },
     { name: "Portfolio", href: "#portfolio", icon: SquareLibrary },
     { name: "Contact", href: "/contact", icon: MessageSquare },

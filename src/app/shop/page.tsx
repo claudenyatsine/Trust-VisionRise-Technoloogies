@@ -86,7 +86,7 @@ export default function ShopPage() {
 
           {/* Product Grid */}
           {filteredProducts.length > 0 ? (
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div id="products" className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {filteredProducts.map((product) => (
                 <Card key={product.id} className="bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group overflow-hidden flex flex-col h-full">
                   <div className="relative aspect-[4/5] overflow-hidden">
