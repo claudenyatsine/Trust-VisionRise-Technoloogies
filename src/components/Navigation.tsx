@@ -14,8 +14,30 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { AdminLoginModal } from "./admin/AdminLoginModal";
 
 export function Navigation() {
+  const [clickCount, setClickCount] = React.useState(0);
+  const [showAdminLogin, setShowAdminLogin] = React.useState(false);
+  const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const newCount = clickCount + 1;
+    setClickCount(newCount);
+
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    if (newCount === 3) {
+      setShowAdminLogin(true);
+      setClickCount(0);
+    } else {
+      timerRef.current = setTimeout(() => {
+        setClickCount(0);
+      }, 500);
+    }
+  };
+
   const navLinks = [
     { name: "Home", href: "/", icon: Home },
     { name: "Products", href: "/shop#products", icon: Package },
@@ -31,7 +53,7 @@ export function Navigation() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-20 items-center">
             <div className="flex items-center">
-              <Link href="/" className="flex items-center gap-3">
+              <Link href="/" onClick={handleLogoClick} className="flex items-center gap-3">
                 <Image
                   src="/logo.png"
                   alt="Trust-VisionRise Technologies Logo"
@@ -68,7 +90,7 @@ export function Navigation() {
 
       {/* Mobile Top Header (Logo only) */}
       <div className="md:hidden fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-border py-4 px-6 flex justify-between items-center shadow-sm">
-        <Link href="/" className="flex items-center gap-2">
+        <Link href="/" onClick={handleLogoClick} className="flex items-center gap-2">
           <Image
             src="/logo.png"
             alt="Logo"
@@ -105,6 +127,8 @@ export function Navigation() {
 
       {/* Bottom spacer for mobile to prevent content clipping */}
       <div className="md:hidden h-24" />
+
+      <AdminLoginModal isOpen={showAdminLogin} onOpenChange={setShowAdminLogin} />
     </>
   );
 }

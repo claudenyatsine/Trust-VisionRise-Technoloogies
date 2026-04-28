@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react";
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
-import { PRODUCTS } from "@/lib/products";
+import { useAdmin } from "@/context/AdminContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,20 +12,21 @@ import { Search, ShoppingCart, Star, Plus, SlidersHorizontal, PackageSearch } fr
 import Image from "next/image";
 
 export default function ShopPage() {
+  const { products } = useAdmin();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
 
-  const categories = ["All", ...Array.from(new Set(PRODUCTS.map((p) => p.category)))];
+  const categories = useMemo(() => ["All", ...Array.from(new Set(products.map((p) => p.category)))], [products]);
 
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       const matchesSearch = 
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.modelNumber.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === "All" || product.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, selectedCategory, products]);
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
@@ -77,7 +78,7 @@ export default function ShopPage() {
 
           {/* Results Info */}
           <div className="mb-8 flex justify-between items-center text-sm font-medium text-slate-500">
-            <p>Showing {filteredProducts.length} of {PRODUCTS.length} products</p>
+            <p>Showing {filteredProducts.length} of {products.length} products</p>
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4" />
               <span>Sort: Featured</span>

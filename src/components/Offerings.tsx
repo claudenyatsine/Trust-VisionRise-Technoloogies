@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart, Zap, Shield, Star, Plus, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { PRODUCTS } from "@/lib/products";
+import { useAdmin } from "@/context/AdminContext";
 import { useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -16,7 +16,7 @@ if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
 }
 
-const newArrivals = PRODUCTS.filter(p => ["1", "2", "3", "4"].includes(p.id));
+// No static filtering here anymore, we'll do it in the component
 
 const packages = [
   {
@@ -40,9 +40,12 @@ const packages = [
 ];
 
 export function Offerings() {
+  const { products } = useAdmin();
   const containerRef = useRef<HTMLDivElement>(null);
   const arrivalsRef = useRef<HTMLDivElement>(null);
   const packagesRef = useRef<HTMLDivElement>(null);
+
+  const newArrivals = products.slice(0, 4); // Just take the first 4 for home page
 
   useGSAP(() => {
     // Reveal arrivals
