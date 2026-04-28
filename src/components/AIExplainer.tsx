@@ -47,7 +47,7 @@ export function AIExplainer() {
     <>
       <div className="fixed bottom-6 right-6 z-50">
         <a
-          href="https://wa.me/263774264540"
+          href="https://wa.me/2637713012399"
           target="_blank"
           rel="noopener noreferrer"
           className="h-16 w-16 rounded-full shadow-2xl bg-[#25D366] text-white flex items-center justify-center p-0 overflow-hidden relative border-4 border-white hover:bg-[#20BA5A] transition-colors"
