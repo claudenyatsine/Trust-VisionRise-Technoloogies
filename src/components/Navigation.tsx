@@ -94,7 +94,7 @@ export function Navigation() {
       </nav>
 
       {/* Mobile Top Header (Logo only) */}
-      <div className="md:hidden fixed top-0 w-full z-50 bg-white/80 backdrop-blur-lg border-b border-border py-4 px-6 flex justify-between items-center shadow-sm">
+      <div className="md:hidden fixed top-0 w-full z-50 bg-white/60 backdrop-blur-xl py-4 px-6 flex justify-between items-center shadow-sm">
         <Link href="/" onClick={handleLogoClick} className="flex items-center gap-2">
           <Image
             src="/logo.png"
@@ -130,8 +130,7 @@ export function Navigation() {
         </div>
       </div>
 
-      {/* Bottom spacer for mobile to prevent content clipping */}
-      <div className="md:hidden h-24" />
+
 
       <AdminLoginModal isOpen={showAdminLogin} onOpenChange={setShowAdminLogin} />
     </>

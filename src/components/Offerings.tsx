@@ -106,7 +106,7 @@ export function Offerings() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-3 lg:grid-cols-4 gap-2 md:gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
             {displayNewArrivals.map((product, idx) => (
               <div key={idx} className="arrival-card h-full cursor-pointer" onClick={() => openDetails(product)}>
                 <Card className="bg-white border-0 shadow-lg hover:shadow-2xl transition-all duration-500 group overflow-hidden flex flex-col h-full">
@@ -164,7 +164,7 @@ export function Offerings() {
             </p>
           </div>
 
-          <div className="grid grid-cols-3 md:grid-cols-3 gap-2 md:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-8 max-w-sm mx-auto md:max-w-none">
             {packages.map((pkg, idx) => (
               <div
                 key={idx}
@@ -182,25 +182,25 @@ export function Offerings() {
                   </div>
                 )}
                 <div className="bg-white rounded-md md:rounded-xl p-2 md:p-8 h-full flex flex-col">
-                  <div className="mb-2 md:mb-8 text-center md:text-left">
-                    <h4 className="text-[#01357D] font-headline font-bold text-[10px] md:text-2xl uppercase tracking-tighter md:tracking-tight mb-1 leading-tight">{pkg.name}</h4>
-                    <p className="text-slate-500 text-[8px] md:text-sm hidden md:block">{pkg.description}</p>
+                  <div className="mb-6 md:mb-8 text-center md:text-left">
+                    <h4 className="text-[#01357D] font-headline font-bold text-xl md:text-2xl uppercase tracking-tighter md:tracking-tight mb-2 md:mb-1 leading-tight">{pkg.name}</h4>
+                    <p className="text-slate-500 text-sm md:text-sm">{pkg.description}</p>
                   </div>
 
 
-                  <ul className="space-y-1 md:space-y-4 mb-4 md:mb-10 flex-grow hidden md:block">
+                  <ul className="space-y-4 md:space-y-4 mb-8 md:mb-10 flex-grow">
                     {pkg.features.map((feature, fIdx) => (
-                      <li key={fIdx} className="flex items-start gap-3">
-                        <div className="mt-1 p-[2px] bg-primary/10 rounded-full">
-                          <Check className="h-3 w-3 text-primary stroke-[3px]" />
+                      <li key={fIdx} className="flex items-start gap-3 md:gap-3">
+                        <div className="mt-1 p-[2px] md:p-[2px] bg-primary/10 rounded-full">
+                          <Check className="h-3 w-3 md:h-3 md:w-3 text-primary stroke-[3px]" />
                         </div>
-                        <span className="text-slate-600 text-sm">{feature}</span>
+                        <span className="text-slate-600 text-sm md:text-sm leading-tight">{feature}</span>
                       </li>
                     ))}
                   </ul>
 
-                  <Button className={`w-full h-8 md:h-12 text-[8px] md:text-sm uppercase font-bold tracking-widest p-1 md:p-4 ${pkg.recommended ? 'bg-primary hover:bg-[#01357D]' : 'bg-slate-800 hover:bg-black'}`}>
-                    Select
+                  <Button className={`w-full h-12 md:h-12 text-sm md:text-sm uppercase font-bold tracking-widest p-4 md:p-4 rounded-full transition-transform active:scale-95 ${pkg.recommended ? 'bg-primary hover:bg-[#01357D]' : 'bg-slate-800 hover:bg-black'}`}>
+                    Select {pkg.name}
                   </Button>
                 </div>
               </div>

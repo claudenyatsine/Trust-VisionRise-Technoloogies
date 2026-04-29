@@ -121,7 +121,7 @@ export function Services() {
           </p>
         </div>
 
-        <div ref={containerRef} className="grid grid-cols-3 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-10">
+        <div ref={containerRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10 max-w-sm mx-auto md:max-w-none">
           {services.map((service, idx) => {
             const img = PlaceHolderImages.find(p => p.id === service.image);
             return (
@@ -133,7 +133,7 @@ export function Services() {
                 className="transition-all duration-300"
               >
                 <Card className="bg-white border-border shadow-md md:shadow-xl h-full group overflow-hidden pointer-events-auto">
-                  <div className="relative h-24 md:h-56 w-full overflow-hidden">
+                  <div className="relative h-56 md:h-56 w-full overflow-hidden">
                     <Image
                       src={img?.imageUrl || ""}
                       alt={service.title}
@@ -147,12 +147,12 @@ export function Services() {
                     </div>
                   </div>
                   <CardHeader className="pt-3 md:pt-8 px-3 md:px-6">
-                    <CardTitle className="font-headline text-[10px] md:text-xl text-[#01357D] uppercase tracking-tighter md:tracking-tight font-bold leading-tight">
+                    <CardTitle className="font-headline text-xl md:text-xl text-[#01357D] uppercase tracking-tighter md:tracking-tight font-bold leading-tight">
                       {service.title}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="px-3 md:px-6 pb-4 hidden md:block">
-                    <CardDescription className="text-[#01357D] text-base leading-relaxed">
+                  <CardContent className="px-6 md:px-6 pb-6 md:pb-4">
+                    <CardDescription className="text-[#01357D] text-sm md:text-base leading-relaxed">
                       {service.description}
                     </CardDescription>
                   </CardContent>

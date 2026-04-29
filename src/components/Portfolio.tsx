@@ -120,7 +120,7 @@ export function Portfolio() {
           >
             <div className="flex items-stretch gap-2 md:gap-10 min-w-max">
               {projects.map((project, idx) => (
-                  <div key={idx} className="portfolio-card h-full min-h-[24rem] md:min-h-[38rem] w-[120px] md:w-[350px] cursor-pointer" onClick={() => openDetails(project)}>
+                  <div key={idx} className="portfolio-card h-full min-h-[24rem] md:min-h-[38rem] w-[280px] md:w-[350px] cursor-pointer" onClick={() => openDetails(project)}>
                     <Card className="flex h-full flex-col bg-white border-border shadow-md md:shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden">
                       <div className="relative aspect-[4/3] overflow-hidden">
                         <Image
