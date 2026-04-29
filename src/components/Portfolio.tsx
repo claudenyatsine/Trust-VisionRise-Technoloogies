@@ -42,15 +42,14 @@ export function Portfolio() {
   const scroll = (direction: "left" | "right") => {
     if (!gridRef.current) return;
     
-    const scrollAmount = 400;
-    gsap.to(gridRef.current, {
-      scrollLeft: direction === "left" 
-        ? gridRef.current.scrollLeft - scrollAmount
-        : gridRef.current.scrollLeft + scrollAmount,
-      duration: 0.6,
-      ease: "power2.inOut",
-      onComplete: checkScroll,
+    const scrollAmount = window.innerWidth > 768 ? 400 : window.innerWidth * 0.8;
+    gridRef.current.scrollBy({
+      left: direction === "left" ? -scrollAmount : scrollAmount,
+      behavior: "smooth",
     });
+    
+    // Check scroll after a delay to account for smooth animation
+    setTimeout(checkScroll, 500);
   };
 
   useGSAP(() => {
@@ -115,12 +114,12 @@ export function Portfolio() {
 
           <div
             ref={gridRef}
-            className="flex-1 overflow-x-auto scrollbar-hide"
-            style={{ scrollBehavior: "auto" }}
+            className="flex-1 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+            style={{ scrollBehavior: "smooth" }}
           >
-            <div className="flex items-stretch gap-2 md:gap-10 min-w-max">
+            <div className="flex items-stretch gap-4 md:gap-10 min-w-max px-[10vw] md:px-0">
               {projects.map((project, idx) => (
-                  <div key={idx} className="portfolio-card h-full min-h-[24rem] md:min-h-[38rem] w-[280px] md:w-[350px] cursor-pointer" onClick={() => openDetails(project)}>
+                  <div key={idx} className="portfolio-card h-full min-h-[24rem] md:min-h-[38rem] w-[80vw] md:w-[350px] cursor-pointer snap-center" onClick={() => openDetails(project)}>
                     <Card className="flex h-full flex-col bg-white border-border shadow-md md:shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden">
                       <div className="relative aspect-[4/3] overflow-hidden">
                         <Image
