@@ -1,4 +1,5 @@
 import { Navigation } from "@/components/Navigation";
+import Link from "next/link";
 import { Hero } from "@/components/Hero";
 import { Offerings } from "@/components/Offerings";
 import { Services } from "@/components/Services";
@@ -28,12 +29,16 @@ export default function Home() {
               Our experts are waiting to build a custom surveillance solution tailored to your specific infrastructure.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button className="h-14 px-8 bg-white text-primary font-bold uppercase tracking-widest rounded transition-transform hover:scale-105">
-                Free Consultation
-              </button>
-              <button className="h-14 px-8 border-2 border-white text-white font-bold uppercase tracking-widest rounded hover:bg-white hover:text-primary transition-colors">
-                View Gallery
-              </button>
+              <Link href="https://wa.me/263713012399" target="_blank" rel="noopener noreferrer">
+                <button className="h-14 w-full sm:w-auto px-8 bg-white text-primary font-bold uppercase tracking-widest rounded transition-transform hover:scale-105">
+                  Free Consultation
+                </button>
+              </Link>
+              <Link href="/gallery">
+                <button className="h-14 w-full sm:w-auto px-8 border-2 border-white text-white font-bold uppercase tracking-widest rounded hover:bg-white hover:text-primary transition-colors">
+                  View Gallery
+                </button>
+              </Link>
             </div>
           </div>
         </section>
