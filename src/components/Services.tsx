@@ -54,18 +54,17 @@ export function Services() {
   useGSAP(() => {
     // Scroll reveal
     gsap.from(cardsRef.current, {
-      y: 100,
+      y: 50,
       opacity: 0,
-      duration: 1,
-      stagger: 0.2,
-      ease: "power3.out",
+      duration: 0.6,
+      stagger: 0.1,
+      ease: "power2.out",
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "top 80%",
+        start: "top 85%",
         toggleActions: "play none none reverse",
       },
       onComplete: () => {
-        // Clear transforms so hover effect isn't fighting initial animation state
         gsap.set(cardsRef.current, { clearProps: "y,opacity" });
       }
     });
@@ -75,7 +74,7 @@ export function Services() {
     gsap.to(cardsRef.current[index], {
       scale: 1.05,
       zIndex: 10,
-      duration: 0.4,
+      duration: 0.3,
       ease: "power2.out",
       overwrite: "auto",
       filter: "blur(0px)",
@@ -85,10 +84,10 @@ export function Services() {
     cardsRef.current.forEach((card, i) => {
       if (i !== index && card) {
         gsap.to(card, {
-          opacity: 0.4,
-          filter: "blur(4px)",
-          scale: 0.95,
-          duration: 0.4,
+          opacity: 0.6,
+          filter: "blur(2px)",
+          scale: 0.98,
+          duration: 0.3,
           ease: "power2.out",
           overwrite: "auto",
         });
@@ -102,7 +101,7 @@ export function Services() {
       opacity: 1,
       filter: "blur(0px)",
       zIndex: 1,
-      duration: 0.4,
+      duration: 0.3,
       ease: "power2.out",
       overwrite: "auto",
     });

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useAdmin } from "@/context/AdminContext";
+import { supabase } from "@/lib/supabase";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -23,9 +24,10 @@ interface AdminDashboardProps {
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const { 
     products, projects, newArrivals,
-    addProduct, updateProduct, removeProduct, 
+    addProduct, updateProduct, removeProduct,
     addProject, updateProject, removeProject, 
     addNewArrival, updateNewArrival, removeNewArrival, moveNewArrivalToProducts,
+    galleryImages, addGalleryImage, removeGalleryImage,
     logout 
   } = useAdmin();
   const [activeTab, setActiveTab] = useState("products");
@@ -53,59 +55,119 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     images: [] as string[],
   };
   const [newProject, setNewProject] = useState(initialProject);
+
+  // New Gallery Image State
+  const initialGalleryImage = {
+    image_url: "",
+    description: "",
+    category: "CCTV",
+  };
+  const [newGalleryImage, setNewGalleryImage] = useState(initialGalleryImage);
+
   const [showNewCategoryInput, setShowNewCategoryInput] = useState<'product' | 'new-arrival' | null>(null);
   const [customCategory, setCustomCategory] = useState("");
 
-  const handleProductSubmit = (e: React.FormEvent) => {
+  const [isUploading, setIsUploading] = useState(false);
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
+
+  const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateProduct({ ...newProduct, id: editingId });
-      setEditingId(null);
-    } else {
-      addProduct({ ...newProduct, id: Math.random().toString(36).substr(2, 9) });
+    setIsSubmittingForm(true);
+    try {
+      if (editingId) {
+        await updateProduct({ ...newProduct, id: editingId });
+        setEditingId(null);
+      } else {
+        await addProduct(newProduct);
+      }
+      setNewProduct(initialProduct);
+    } catch (error) {
+      console.error("Error submitting product:", error);
+    } finally {
+      setIsSubmittingForm(false);
     }
-    setNewProduct(initialProduct);
   };
 
-  const handleProjectSubmit = (e: React.FormEvent) => {
+  const handleProjectSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateProject(newProject);
-      setEditingId(null);
-    } else {
-      addProject(newProject);
+    setIsSubmittingForm(true);
+    try {
+      if (editingId) {
+        await updateProject({ ...newProject, id: editingId });
+        setEditingId(null);
+      } else {
+        await addProject(newProject);
+      }
+      setNewProject(initialProject);
+    } catch (error) {
+      console.error("Error submitting project:", error);
+    } finally {
+      setIsSubmittingForm(false);
     }
-    setNewProject(initialProject);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'project' | 'new-arrival') => {
+  const handleGallerySubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingForm(true);
+    try {
+      await addGalleryImage(newGalleryImage);
+      setNewGalleryImage(initialGalleryImage);
+    } catch (error) {
+      console.error("Error submitting gallery image:", error);
+    } finally {
+      setIsSubmittingForm(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'project' | 'new-arrival' | 'gallery') => {
     const files = Array.from(e.target.files || []);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
+    if (files.length === 0) return;
+
+    setIsUploading(true);
+    const bucket = type === 'project' ? 'projects' : (type === 'gallery' ? 'gallery' : 'products');
+
+    for (const file of files) {
+      try {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(filePath, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: { publicUrl } } = supabase.storage
+          .from(bucket)
+          .getPublicUrl(filePath);
+
         if (type === 'product') {
           setNewProduct(prev => ({ 
             ...prev, 
-            images: [...(prev.images || []), base64String],
-            image: prev.image && !prev.image.startsWith('/images') ? prev.image : base64String 
+            images: [...(prev.images || []), publicUrl],
+            image: prev.image && !prev.image.startsWith('/images') ? prev.image : publicUrl 
           }));
         } else if (type === 'project') {
           setNewProject(prev => ({ 
             ...prev, 
-            images: [...(prev.images || []), base64String],
-            image: prev.image && prev.image !== "portfolio-warehouse" ? prev.image : base64String
+            images: [...(prev.images || []), publicUrl],
+            image: prev.image && prev.image !== "portfolio-warehouse" ? prev.image : publicUrl
           }));
         } else if (type === 'new-arrival') {
           setNewNewArrival(prev => ({ 
             ...prev, 
-            images: [...(prev.images || []), base64String],
-            image: prev.image && !prev.image.startsWith('/images') ? prev.image : base64String
+            images: [...(prev.images || []), publicUrl],
+            image: prev.image && !prev.image.startsWith('/images') ? prev.image : publicUrl
           }));
+        } else if (type === 'gallery') {
+          setNewGalleryImage(prev => ({ ...prev, image_url: publicUrl }));
         }
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (error) {
+        console.error('Error uploading image:', error);
+      }
+    }
+    setIsUploading(false);
   };
 
   const removeImage = (index: number, type: 'product' | 'project' | 'new-arrival') => {
@@ -130,15 +192,22 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     else if (type === 'new-arrival') setNewNewArrival({ ...newNewArrival, image: url });
   };
 
-  const handleNewArrivalSubmit = (e: React.FormEvent) => {
+  const handleNewArrivalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateNewArrival({ ...newNewArrival, id: editingId });
-      setEditingId(null);
-    } else {
-      addNewArrival({ ...newNewArrival, id: Math.random().toString(36).substr(2, 9) });
+    setIsSubmittingForm(true);
+    try {
+      if (editingId) {
+        await updateNewArrival({ ...newNewArrival, id: editingId });
+        setEditingId(null);
+      } else {
+        await addNewArrival(newNewArrival);
+      }
+      setNewNewArrival(initialProduct);
+    } catch (error) {
+      console.error("Error submitting new arrival:", error);
+    } finally {
+      setIsSubmittingForm(false);
     }
-    setNewNewArrival(initialProduct);
   };
 
   const startEditingProduct = (product: any) => {
@@ -149,7 +218,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
   const startEditingProject = (project: any) => {
     setNewProject(project);
-    setEditingId(project.title); // Title is used as ID for projects in context
+    setEditingId(project.id);
     setActiveTab("projects");
   };
 
@@ -171,6 +240,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setNewProduct(initialProduct);
     setNewProject(initialProject);
     setNewNewArrival(initialProduct);
+    setNewGalleryImage(initialGalleryImage);
   };
 
   return (
@@ -207,6 +277,10 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             <TabsTrigger value="projects" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
               <LayoutGrid size={14} />
               Projects ({projects.length})
+            </TabsTrigger>
+            <TabsTrigger value="gallery" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
+              <ImageIcon size={14} />
+              Gallery ({galleryImages.length})
             </TabsTrigger>
           </TabsList>
         </div>
@@ -332,21 +406,22 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         </div>
                       </div>
                     ))}
-                    <label className="aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
-                      <Plus size={16} className="text-slate-400" />
-                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">Add</span>
+                    <label className={`aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
+                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">{isUploading ? 'Uploading...' : 'Add'}</span>
                       <input 
                         type="file" 
                         multiple 
                         accept="image/*" 
                         onChange={(e) => handleImageUpload(e, 'product')} 
                         className="hidden" 
+                        disabled={isUploading}
                       />
                     </label>
                   </div>
                 </div>
-                <Button type="submit" className="col-span-2 bg-primary font-bold uppercase tracking-widest h-12 shadow-lg shadow-primary/20">
-                  {editingId ? "Save Changes" : "Deploy to Catalog"}
+                <Button type="submit" disabled={isSubmittingForm || isUploading} className="col-span-2 bg-primary font-bold uppercase tracking-widest h-12 shadow-lg shadow-primary/20">
+                  {isSubmittingForm ? "Processing..." : (editingId ? "Save Changes" : "Deploy to Catalog")}
                 </Button>
                 {editingId && (
                   <Button 
@@ -378,7 +453,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <Button variant="ghost" size="icon" onClick={() => startEditingProduct(product)} className="text-slate-300 hover:text-[#01357D] hover:bg-slate-50">
                       <Edit2 size={16} />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => removeProduct(product.id)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
+                    <Button variant="ghost" size="icon" onClick={() => removeProduct(product.id!)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
                       <Trash2 size={18} />
                     </Button>
                   </div>
@@ -507,21 +582,22 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         </div>
                       </div>
                     ))}
-                    <label className="aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
-                      <Plus size={16} className="text-slate-400" />
-                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">Add</span>
+                    <label className={`aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
+                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">{isUploading ? 'Uploading...' : 'Add'}</span>
                       <input 
                         type="file" 
                         multiple 
                         accept="image/*" 
                         onChange={(e) => handleImageUpload(e, 'new-arrival')} 
                         className="hidden" 
+                        disabled={isUploading}
                       />
                     </label>
                   </div>
                 </div>
-                <Button type="submit" className="col-span-2 bg-[#25D366] hover:bg-[#20BA5A] text-white font-bold uppercase tracking-widest h-12 shadow-lg">
-                  {editingId ? "Update Entry" : "Launch as New Arrival"}
+                <Button type="submit" disabled={isSubmittingForm || isUploading} className="col-span-2 bg-[#25D366] hover:bg-[#20BA5A] text-white font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {isSubmittingForm ? "Processing..." : (editingId ? "Update Entry" : "Launch as New Arrival")}
                 </Button>
                 {editingId && (
                   <Button 
@@ -561,7 +637,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <Button 
                       variant="ghost" 
                       size="sm" 
-                      onClick={() => moveNewArrivalToProducts(item.id)}
+                      onClick={() => moveNewArrivalToProducts(item.id!)}
                       className="text-[#01357D] hover:bg-slate-50 gap-1 font-bold uppercase tracking-widest text-[9px]"
                       title="Move to Products"
                     >
@@ -571,7 +647,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <Button variant="ghost" size="icon" onClick={() => startEditingNewArrival(item)} className="text-slate-300 hover:text-[#01357D] hover:bg-slate-50">
                       <Edit2 size={16} />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => removeNewArrival(item.id)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
+                    <Button variant="ghost" size="icon" onClick={() => removeNewArrival(item.id!)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
                       <Trash2 size={18} />
                     </Button>
                   </div>
@@ -594,7 +670,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   onChange={e => setNewProject({...newProject, title: e.target.value})} 
                   required 
                   className="bg-white" 
-                  disabled={!!editingId} 
                 />
 
                 <Input placeholder="Location" value={newProject.location} onChange={e => setNewProject({...newProject, location: e.target.value})} required className="bg-white" />
@@ -627,21 +702,22 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         </div>
                       </div>
                     ))}
-                    <label className="aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors">
-                      <Plus size={16} className="text-slate-400" />
-                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">Add</span>
+                    <label className={`aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
+                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">{isUploading ? 'Uploading...' : 'Add'}</span>
                       <input 
                         type="file" 
                         multiple 
                         accept="image/*" 
                         onChange={(e) => handleImageUpload(e, 'project')} 
                         className="hidden" 
+                        disabled={isUploading}
                       />
                     </label>
                   </div>
                 </div>
-                <Button type="submit" className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
-                  {editingId ? "Update Archive" : "Archive in Portfolio"}
+                <Button type="submit" disabled={isSubmittingForm || isUploading} className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {isSubmittingForm ? "Processing..." : (editingId ? "Update Archive" : "Archive in Portfolio")}
                 </Button>
                 {editingId && (
                   <Button 
@@ -677,8 +753,73 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     <Button variant="ghost" size="icon" onClick={() => startEditingProject(project)} className="text-slate-300 hover:text-[#01357D] hover:bg-slate-50">
                       <Edit2 size={16} />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => removeProject(project.title)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
+                    <Button variant="ghost" size="icon" onClick={() => removeProject(project.id!)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
                       <Trash2 size={18} />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="gallery" className="m-0 space-y-8">
+            <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
+              <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
+                <ImageIcon size={16} />
+                Add to Gallery
+              </h3>
+              <form onSubmit={handleGallerySubmit} className="grid grid-cols-2 gap-4">
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Upload Image</label>
+                  <label className={`w-full aspect-video rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white transition-all overflow-hidden ${isUploading ? 'opacity-50' : ''}`}>
+                    {newGalleryImage.image_url ? (
+                      <img src={newGalleryImage.image_url} className="w-full h-full object-cover" />
+                    ) : (
+                      <>
+                        <ImageIcon size={24} className="text-slate-300 mb-2" />
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Select Installation Image</span>
+                      </>
+                    )}
+                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'gallery')} disabled={isUploading} />
+                  </label>
+                </div>
+                
+                <div className="col-span-2 space-y-4">
+                  <Input 
+                    placeholder="Brief description of the installation" 
+                    value={newGalleryImage.description} 
+                    onChange={e => setNewGalleryImage({...newGalleryImage, description: e.target.value})}
+                    required
+                    className="bg-white"
+                  />
+                  
+                  <Select value={newGalleryImage.category} onValueChange={(val) => setNewGalleryImage({...newGalleryImage, category: val})}>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="CCTV">CCTV Installation</SelectItem>
+                      <SelectItem value="SOLAR">Solar System</SelectItem>
+                      <SelectItem value="NETWORKING">Networking</SelectItem>
+                      <SelectItem value="ACCESS">Access Control</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <Button type="submit" disabled={isSubmittingForm || isUploading || !newGalleryImage.image_url} className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {isSubmittingForm ? "Saving..." : "Add to Public Gallery"}
+                </Button>
+              </form>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              {galleryImages.map((img) => (
+                <div key={img.id} className="relative group aspect-square rounded-xl overflow-hidden border bg-white">
+                  <img src={img.image_url} alt={img.description} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center p-4 text-center">
+                    <p className="text-white text-[10px] font-bold uppercase mb-2">{img.description}</p>
+                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => removeGalleryImage(img.id!)}>
+                      <Trash2 size={14} />
                     </Button>
                   </div>
                 </div>

@@ -10,10 +10,12 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import { X, Maximize2, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAdmin } from "@/context/AdminContext";
 
 export default function GalleryPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { galleryImages: dbImages } = useAdmin();
 
   useGSAP(() => {
     gsap.from(".gallery-item", {
@@ -25,7 +27,10 @@ export default function GalleryPage() {
     });
   }, { scope: containerRef });
 
-  const galleryImages = PlaceHolderImages.filter(img => img.id.startsWith('portfolio-') || img.id.startsWith('service-'));
+  // Use DB images if available, otherwise fallback to placeholders filtered for gallery
+  const galleryImages = dbImages.length > 0 
+    ? dbImages.map(img => ({ imageUrl: img.image_url, description: img.description, category: img.category || 'CCTV' }))
+    : PlaceHolderImages.filter(img => img.id.startsWith('portfolio-') || img.id.startsWith('service-')).map(img => ({ imageUrl: img.imageUrl, description: img.description, category: img.id.split('-')[1] }));
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
@@ -59,7 +64,7 @@ export default function GalleryPage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#01357D]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                     <Badge className="w-fit mb-2 bg-primary text-white uppercase text-[10px] tracking-widest font-bold">
-                      {img.id.split('-')[1]}
+                      {img.category}
                     </Badge>
                     <p className="text-white font-bold text-sm uppercase tracking-tight">
                       {img.description}

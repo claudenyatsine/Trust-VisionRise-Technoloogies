@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight, LayoutGrid } from "lucide-react";
 import { useAdmin } from "@/context/AdminContext";
 import { ItemDetailsModal } from "./ItemDetailsModal";
 
@@ -42,7 +42,10 @@ export function Portfolio() {
   const scroll = (direction: "left" | "right") => {
     if (!gridRef.current) return;
     
-    const scrollAmount = window.innerWidth > 768 ? 400 : window.innerWidth * 0.8;
+    const gap = window.innerWidth > 768 ? 40 : 24;
+    const cardWidth = window.innerWidth > 768 ? 397 : window.innerWidth * 0.80;
+    const scrollAmount = cardWidth + gap;
+    
     gridRef.current.scrollBy({
       left: direction === "left" ? -scrollAmount : scrollAmount,
       behavior: "smooth",
@@ -54,23 +57,23 @@ export function Portfolio() {
 
   useGSAP(() => {
     gsap.from(".portfolio-card", {
-      scale: 0.9,
+      y: 30,
       opacity: 0,
-      duration: 1,
-      stagger: 0.2,
+      duration: 0.6,
+      stagger: 0.1,
       ease: "power2.out",
       scrollTrigger: {
         trigger: containerRef.current,
-        start: "top 80%",
+        start: "top 85%",
       }
     });
 
     gsap.from(".portfolio-header > *", {
-      x: -50,
+      x: -30,
       opacity: 0,
-      duration: 1,
+      duration: 0.6,
       stagger: 0.1,
-      ease: "power3.out",
+      ease: "power2.out",
       scrollTrigger: {
         trigger: containerRef.current,
         start: "top 90%",
@@ -81,84 +84,105 @@ export function Portfolio() {
   }, { scope: containerRef });
 
   useGSAP(() => {
-    gridRef.current?.addEventListener("scroll", checkScroll);
-    return () => {
-      gridRef.current?.removeEventListener("scroll", checkScroll);
-    };
+    const grid = gridRef.current;
+    if (grid) {
+      grid.addEventListener("scroll", checkScroll);
+      return () => grid.removeEventListener("scroll", checkScroll);
+    }
   });
 
   return (
-    <section id="portfolio" ref={containerRef} className="py-24 bg-white overflow-hidden">
+    <section id="portfolio" ref={containerRef} className="py-24 bg-slate-50 overflow-hidden">
       <div className="container max-w-7xl mx-auto px-4">
         <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6 portfolio-header">
           <div className="max-w-2xl">
-            <h2 className="text-[#01357D] font-bold uppercase tracking-widest text-sm mb-4">Our Portfolio</h2>
+            <h2 className="text-[#01357D] font-bold uppercase tracking-widest text-sm mb-4 border-l-4 border-primary pl-4">Our Portfolio</h2>
             <h3 className="text-4xl md:text-5xl font-headline font-bold text-[#01357D] uppercase tracking-tighter">
               Proven Security Infrastructure
             </h3>
           </div>
           <p className="text-[#01357D]/80 max-w-md text-sm uppercase tracking-widest font-bold">
-            Explore our most recent high-stakes installations across industrial, commercial, and luxury residential sectors.
+            Explore our most recent high-stakes installations across various sectors.
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => scroll("left")}
-            disabled={!canScrollLeft}
-            className="flex-shrink-0 p-2 rounded-full bg-[#01357D] text-white hover:bg-[#01357D]/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300"
-            aria-label="Scroll left"
-          >
-            <ChevronLeft size={24} />
-          </button>
+        <div className="flex items-center gap-2 md:gap-6 max-w-[98%] md:max-w-[90%] mx-auto relative group/carousel">
+          {projects.length > 0 ? (
+            <>
+              <button
+                onClick={() => scroll("left")}
+                disabled={!canScrollLeft}
+                className="hidden md:flex absolute -left-4 z-20 p-4 rounded-full bg-white text-[#01357D] hover:bg-primary hover:text-white disabled:opacity-0 disabled:pointer-events-none transition-all duration-300 shadow-2xl border border-slate-100"
+                aria-label="Scroll left"
+              >
+                <ChevronLeft size={24} />
+              </button>
 
-          <div
-            ref={gridRef}
-            className="flex-1 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
-            style={{ scrollBehavior: "smooth" }}
-          >
-            <div className="flex items-stretch gap-4 md:gap-10 min-w-max px-[10vw] md:px-0">
-              {projects.map((project, idx) => (
-                  <div key={idx} className="portfolio-card h-full min-h-[24rem] md:min-h-[38rem] w-[80vw] md:w-[350px] cursor-pointer snap-center" onClick={() => openDetails(project)}>
-                    <Card className="flex h-full flex-col bg-white border-border shadow-md md:shadow-xl hover:shadow-2xl transition-all duration-300 group overflow-hidden">
-                      <div className="relative aspect-[4/3] overflow-hidden">
-                        <Image
-                          src={project.image.startsWith('data:') || project.image.startsWith('/') ? project.image : (PlaceHolderImages.find(p => p.id === project.image)?.imageUrl || "")}
-                          alt={project.title}
-                          fill
-                          className="object-cover transition-transform duration-700 group-hover:scale-110"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#01357D]/40 via-transparent to-transparent opacity-60" />
-                        <div className="absolute bottom-1 left-1 md:bottom-4 md:left-4">
-                          <span className="px-1 py-0.5 md:px-3 md:py-1 bg-[#01357D] text-white text-[6px] md:text-[10px] font-bold uppercase tracking-widest shadow-xl">
-                            {project.location}
-                          </span>
-                        </div>
+              <div
+                ref={gridRef}
+                className="flex-1 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-12 pt-4"
+                style={{ scrollBehavior: "smooth" }}
+              >
+                <div className="flex items-stretch gap-6 md:gap-10 min-w-max px-6 md:px-12">
+                  {projects.map((project, idx) => (
+                      <div key={idx} className="portfolio-card h-full min-h-[21rem] md:min-h-[36rem] w-[80vw] md:w-[397px] cursor-pointer snap-center" onClick={() => openDetails(project)}>
+                        <Card className="flex h-full flex-col bg-white border-0 shadow-xl hover:shadow-2xl transition-all duration-500 group overflow-hidden rounded-3xl relative">
+                          <div className="relative aspect-[16/10] overflow-hidden">
+                            <Image
+                              src={project.image.startsWith('data:') || project.image.startsWith('/') || project.image.startsWith('http') ? project.image : (PlaceHolderImages.find(p => p.id === project.image)?.imageUrl || "")}
+                              alt={project.title}
+                              fill
+                              className="object-cover transition-transform duration-1000 group-hover:scale-110"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#01357D]/80 via-transparent to-transparent opacity-60" />
+                            <div className="absolute bottom-4 left-4">
+                              <span className="px-4 py-1.5 bg-white/95 backdrop-blur-md text-[#01357D] text-[10px] md:text-[12px] font-bold uppercase tracking-widest shadow-xl rounded-full">
+                                {project.location}
+                              </span>
+                            </div>
+                          </div>
+                          <CardContent className="flex-1 p-6 md:p-10 flex flex-col justify-between bg-white">
+                            <div>
+                              <h4 className="text-[#01357D] font-headline font-bold text-xl md:text-3xl mb-3 md:mb-5 uppercase tracking-tighter md:tracking-tight leading-tight group-hover:text-primary transition-colors">
+                                {project.title}
+                              </h4>
+                              <p className="text-slate-500 text-sm md:text-lg leading-relaxed line-clamp-3 md:line-clamp-4">
+                                {project.description}
+                              </p>
+                            </div>
+                            <div className="mt-8 flex items-center gap-3 text-primary font-bold text-xs md:text-sm uppercase tracking-[0.2em] group/btn">
+                              Explore Case Study 
+                              <div className="p-2 rounded-full bg-primary/5 group-hover/btn:bg-primary group-hover/btn:text-white transition-all">
+                                <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
                       </div>
-                      <CardContent className="h-[8rem] md:h-[12rem] p-2 md:p-8 overflow-hidden">
-                        <div className="h-full flex flex-col">
-                          <h4 className="text-[#01357D] font-headline font-bold text-[10px] md:text-xl mb-1 md:mb-3 uppercase tracking-tighter md:tracking-tight leading-tight overflow-hidden text-ellipsis">
-                            {project.title}
-                          </h4>
-                          <p className="text-[#01357D]/90 text-[8px] md:text-sm leading-relaxed flex-1 overflow-hidden text-ellipsis">
-                            {project.description}
-                          </p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-              ))}
-            </div>
-          </div>
+                  ))}
+                </div>
+              </div>
 
-          <button
-            onClick={() => scroll("right")}
-            disabled={!canScrollRight}
-            className="flex-shrink-0 p-2 rounded-full bg-[#01357D] text-white hover:bg-[#01357D]/80 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300"
-            aria-label="Scroll right"
-          >
-            <ChevronRight size={24} />
-          </button>
+              <button
+                onClick={() => scroll("right")}
+                disabled={!canScrollRight}
+                className="hidden md:flex absolute -right-4 z-20 p-4 rounded-full bg-white text-[#01357D] hover:bg-primary hover:text-white disabled:opacity-0 disabled:pointer-events-none transition-all duration-300 shadow-2xl border border-slate-100"
+                aria-label="Scroll right"
+              >
+                <ChevronRight size={24} />
+              </button>
+            </>
+          ) : (
+            <div className="w-full py-24 text-center border-2 border-dashed border-slate-200 rounded-3xl bg-white/50">
+              <div className="max-w-md mx-auto space-y-4">
+                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400">
+                  <LayoutGrid size={32} />
+                </div>
+                <h4 className="text-[#01357D] font-bold uppercase tracking-widest">Portfolio is Empty</h4>
+                <p className="text-slate-500 text-sm">Please log in to the Admin Dashboard to add your first high-stakes installation project.</p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 
+import { supabase } from "@/lib/supabase";
+
 const formSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
   email: z.string().email("Please enter a valid email."),
@@ -26,6 +28,7 @@ const formSchema = z.object({
 });
 
 export function LeadForm() {
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,13 +39,37 @@ export function LeadForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values);
-    toast({
-      title: "Request Received!",
-      description: "Our security experts will contact you within 24 hours.",
-    });
-    form.reset();
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from('leads')
+        .insert([
+          {
+            name: values.name,
+            email: values.email,
+            phone: values.phone,
+            message: values.message,
+          },
+        ]);
+
+      if (error) throw error;
+
+      toast({
+        title: "Request Received!",
+        description: "Our security experts will contact you within 24 hours.",
+      });
+      form.reset();
+    } catch (error) {
+      console.error("Error submitting lead:", error);
+      toast({
+        title: "Submission Failed",
+        description: "There was an error sending your request. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -103,8 +130,8 @@ export function LeadForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full font-bold h-12 uppercase tracking-widest text-lg">
-            Protect My Property
+          <Button type="submit" disabled={isSubmitting} className="w-full font-bold h-12 uppercase tracking-widest text-lg">
+            {isSubmitting ? "Sending Request..." : "Protect My Property"}
           </Button>
         </form>
       </Form>
