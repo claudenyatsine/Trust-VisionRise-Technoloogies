@@ -15,7 +15,7 @@ import { useAdmin } from "@/context/AdminContext";
 export default function GalleryPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { galleryImages: dbImages } = useAdmin();
+  const { gallery } = useAdmin();
 
   useGSAP(() => {
     gsap.from(".gallery-item", {
@@ -27,10 +27,14 @@ export default function GalleryPage() {
     });
   }, { scope: containerRef });
 
-  // Use DB images if available, otherwise fallback to placeholders filtered for gallery
-  const galleryImages = dbImages.length > 0 
-    ? dbImages.map(img => ({ image: img.image_url, title: img.description, category: img.category || 'CCTV' }))
-    : PlaceHolderImages.filter(img => img.id.startsWith('portfolio-') || img.id.startsWith('service-')).map(img => ({ image: img.imageUrl, title: img.description, category: img.id.split('-')[1] }));
+  // Use DB images if available, otherwise fallback to placeholders
+  const displayImages = gallery.length > 0 
+    ? gallery 
+    : PlaceHolderImages.filter(img => img.id.startsWith('portfolio-') || img.id.startsWith('service-')).map(img => ({ 
+        image: img.imageUrl, 
+        title: img.description, 
+        category: img.id.split('-')[1].toUpperCase() 
+      }));
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
@@ -48,7 +52,7 @@ export default function GalleryPage() {
           </div>
 
           <div ref={containerRef} className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-            {galleryImages.map((img, idx) => (
+            {displayImages.map((img, idx) => (
               <div 
                 key={idx} 
                 className="gallery-item relative group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-lg break-inside-avoid transition-all duration-500 hover:shadow-2xl"

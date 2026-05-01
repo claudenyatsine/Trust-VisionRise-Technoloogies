@@ -106,7 +106,7 @@ export function Portfolio() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 md:gap-6 max-w-[98%] md:max-w-[90%] mx-auto relative group/carousel">
+        <div className="flex items-center gap-2 md:gap-6 max-w-[98%] md:max-w-[85%] mx-auto relative group/carousel">
           {projects.length > 0 ? (
             <>
               <button
@@ -125,7 +125,7 @@ export function Portfolio() {
               >
                 <div className="flex items-stretch gap-6 md:gap-10 min-w-max px-6 md:px-12">
                   {projects.map((project, idx) => (
-                      <div key={idx} className="portfolio-card h-full min-h-[21rem] md:min-h-[36rem] w-[80vw] md:w-[397px] cursor-pointer snap-center" onClick={() => openDetails(project)}>
+                      <div key={idx} className="portfolio-card h-full min-h-[21rem] md:min-h-[36rem] w-[85vw] md:w-[397px] cursor-pointer snap-center" onClick={() => openDetails(project)}>
                         <Card className="flex h-full flex-col bg-white border-0 shadow-xl hover:shadow-2xl transition-all duration-500 group overflow-hidden rounded-3xl relative">
                           <div className="relative aspect-[16/10] overflow-hidden">
                             <Image

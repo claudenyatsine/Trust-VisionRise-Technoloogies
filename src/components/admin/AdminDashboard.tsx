@@ -23,11 +23,6 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const { 
-    products, projects, newArrivals,
-    addProduct, updateProduct, removeProduct,
-    addProject, updateProject, removeProject, 
-    addNewArrival, updateNewArrival, removeNewArrival, moveNewArrivalToProducts,
-    galleryImages, addGalleryImage, removeGalleryImage,
     gallery, addGalleryItem, updateGalleryItem, removeGalleryItem,
     downloads, addDownload, updateDownload, removeDownload,
     logout 
@@ -58,18 +53,26 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   };
   const [newProject, setNewProject] = useState(initialProject);
 
-  // New Gallery Image State (Supabase)
+  // New Gallery Image State
   const initialGalleryImage = {
     image_url: "",
     description: "",
-    category: "Installation",
+    category: "CCTV",
   };
   const [newGalleryImage, setNewGalleryImage] = useState(initialGalleryImage);
 
   const [showNewCategoryInput, setShowNewCategoryInput] = useState<'product' | 'new-arrival' | null>(null);
   const [customCategory, setCustomCategory] = useState("");
   
-  // New Download Form State (Local)
+  // New Gallery Form State
+  const initialGalleryItem = {
+    title: "",
+    image: "",
+    category: "Installation",
+  };
+  const [newGalleryItem, setNewGalleryItem] = useState(initialGalleryItem);
+
+  // New Download Form State
   const initialDownload = {
     title: "",
     description: "",
@@ -123,10 +126,15 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     e.preventDefault();
     setIsSubmittingForm(true);
     try {
-      await addGalleryImage(newGalleryImage);
-      setNewGalleryImage(initialGalleryImage);
+      if (editingId) {
+        await updateGalleryItem({ ...newGalleryItem, id: editingId });
+        setEditingId(null);
+      } else {
+        await addGalleryItem({ ...newGalleryItem, id: Math.random().toString(36).substr(2, 9) });
+      }
+      setNewGalleryItem(initialGalleryItem);
     } catch (error) {
-      console.error("Error submitting gallery image:", error);
+      console.error("Error submitting gallery item:", error);
     } finally {
       setIsSubmittingForm(false);
     }
@@ -185,7 +193,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             image: prev.image && !prev.image.startsWith('/images') ? prev.image : publicUrl
           }));
         } else if (type === 'gallery') {
-          setNewGalleryImage(prev => ({ ...prev, image_url: publicUrl }));
+          setNewGalleryItem(prev => ({ ...prev, image: publicUrl }));
         }
       } catch (error) {
         console.error('Error uploading image:', error);
@@ -252,6 +260,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setActiveTab("new-arrivals");
   };
 
+  const startEditingGalleryItem = (item: any) => {
+    setNewGalleryItem(item);
+    setEditingId(item.id);
+    setActiveTab("gallery");
+  };
+
   const startEditingDownload = (item: any) => {
     setNewDownload(item);
     setEditingId(item.id);
@@ -270,7 +284,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setNewProduct(initialProduct);
     setNewProject(initialProject);
     setNewNewArrival(initialProduct);
-    setNewGalleryImage(initialGalleryImage);
+    setNewGalleryItem(initialGalleryItem);
     setNewDownload(initialDownload);
   };
 
@@ -311,7 +325,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </TabsTrigger>
             <TabsTrigger value="gallery" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
               <ImageIcon size={14} />
-              Gallery ({galleryImages.length})
+              Gallery ({gallery.length})
             </TabsTrigger>
             <TabsTrigger value="downloads" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
               <Download size={14} />
@@ -320,8 +334,9 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           </TabsList>
         </div>
 
-        <ScrollArea className="flex-1 p-6 min-h-0">
-          <TabsContent value="products" className="m-0 space-y-8">
+        <div className="flex-1 w-full overflow-y-auto custom-scrollbar bg-white">
+          <div className="p-6">
+            <TabsContent value="products" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
                 {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
@@ -497,7 +512,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="new-arrivals" className="m-0 space-y-8">
+          <TabsContent value="new-arrivals" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
                 {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
@@ -691,7 +706,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="projects" className="m-0 space-y-8">
+          <TabsContent value="projects" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
                 {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
@@ -797,21 +812,21 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="gallery" className="m-0 space-y-8">
+          <TabsContent value="gallery" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
-                <Plus size={16} /> 
-                Add Image to Gallery (Syncing to Cloud)
+                {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
+                {editingId ? "Update Gallery Image" : "Add Image to Gallery (Syncing to Cloud)"}
               </h3>
               <form onSubmit={handleGallerySubmit} className="grid grid-cols-2 gap-4">
                 <Input 
-                  placeholder="Image Description" 
-                  value={newGalleryImage.description} 
-                  onChange={e => setNewGalleryImage({...newGalleryImage, description: e.target.value})} 
+                  placeholder="Image Title" 
+                  value={newGalleryItem.title} 
+                  onChange={e => setNewGalleryItem({...newGalleryItem, title: e.target.value})} 
                   required 
                   className="bg-white" 
                 />
-                <Select value={newGalleryImage.category} onValueChange={(val) => setNewGalleryImage({...newGalleryImage, category: val})}>
+                <Select value={newGalleryItem.category} onValueChange={(val) => setNewGalleryItem({...newGalleryItem, category: val})}>
                   <SelectTrigger className="bg-white">
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
@@ -825,12 +840,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                 <div className="col-span-2">
                   <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Gallery Image</label>
                   <div className="flex gap-4 items-center">
-                    {newGalleryImage.image_url && (
+                    {newGalleryItem.image && (
                       <div className="w-24 h-24 rounded-lg overflow-hidden border">
-                        <img src={newGalleryImage.image_url} alt="Preview" className="w-full h-full object-cover" />
+                        <img src={newGalleryItem.image} alt="Preview" className="w-full h-full object-cover" />
                       </div>
                     )}
-                    <label className={`flex-1 h-24 rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <label className={`flex-1 h-24 rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50' : ''}`}>
                       {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
                       <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">{isUploading ? 'Uploading...' : 'Upload Image'}</span>
                       <input 
@@ -843,28 +858,33 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                     </label>
                   </div>
                 </div>
-                <Button type="submit" disabled={isSubmittingForm || isUploading || !newGalleryImage.image_url} className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
-                  {isSubmittingForm ? "Publishing..." : "Publish to Gallery"}
+                <Button type="submit" disabled={isSubmittingForm || isUploading || !newGalleryItem.image} className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {isSubmittingForm ? "Saving..." : (editingId ? "Update Image" : "Publish to Gallery")}
                 </Button>
               </form>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {galleryImages.map((item) => (
+              {gallery.map((item) => (
                 <div key={item.id} className="group relative aspect-square rounded-xl overflow-hidden border bg-white">
-                  <img src={item.image_url} alt={item.description} className="w-full h-full object-cover" />
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                    <p className="text-white font-bold text-[10px] uppercase text-center px-2">{item.description}</p>
-                    <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => removeGalleryImage(item.id!)}>
-                      <Trash2 size={14} />
-                    </Button>
+                    <p className="text-white font-bold text-[10px] uppercase text-center px-2">{item.title}</p>
+                    <div className="flex gap-2">
+                      <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => startEditingGalleryItem(item)}>
+                        <Edit2 size={14} />
+                      </Button>
+                      <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => removeGalleryItem(item.id)}>
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           </TabsContent>
 
-          <TabsContent value="downloads" className="m-0 space-y-8">
+          <TabsContent value="downloads" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
                 {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
@@ -940,11 +960,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
               ))}
             </div>
           </TabsContent>
-        </ScrollArea>
+          </div>
+        </div>
       </Tabs>
       
       <div className="p-4 border-t bg-slate-50 text-[9px] text-center text-slate-400 uppercase tracking-[0.2em] font-bold">
-        Session Status: Authenticated Admin | System Version 1.1.0 (Supabase Powered)
+        Session Status: Authenticated Admin | System Version 1.0.2
       </div>
     </div>
   );
