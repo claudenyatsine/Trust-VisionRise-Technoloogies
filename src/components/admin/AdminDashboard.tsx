@@ -53,14 +53,6 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   };
   const [newProject, setNewProject] = useState(initialProject);
 
-  // New Gallery Image State
-  const initialGalleryImage = {
-    image_url: "",
-    description: "",
-    category: "CCTV",
-  };
-  const [newGalleryImage, setNewGalleryImage] = useState(initialGalleryImage);
-
   const [showNewCategoryInput, setShowNewCategoryInput] = useState<'product' | 'new-arrival' | null>(null);
   const [customCategory, setCustomCategory] = useState("");
   
@@ -151,12 +143,12 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setNewDownload(initialDownload);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'project' | 'new-arrival' | 'gallery') => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'project' | 'new-arrival' | 'gallery' | 'download') => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
 
     setIsUploading(true);
-    const bucket = type === 'project' ? 'projects' : (type === 'gallery' ? 'gallery' : 'products');
+    const bucket = type === 'project' ? 'projects' : (type === 'gallery' ? 'gallery' : (type === 'download' ? 'downloads' : 'products'));
 
     for (const file of files) {
       try {
@@ -194,6 +186,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           }));
         } else if (type === 'gallery') {
           setNewGalleryItem(prev => ({ ...prev, image: publicUrl }));
+        } else if (type === 'download') {
+          setNewDownload(prev => ({ 
+            ...prev, 
+            downloadUrl: publicUrl,
+            fileType: file.name.split('.').pop()?.toUpperCase() || 'PDF',
+            fileSize: `${(file.size / (1024 * 1024)).toFixed(2)} MB`
+          }));
         }
       } catch (error) {
         console.error('Error uploading image:', error);
@@ -463,15 +462,15 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         type="file" 
                         multiple 
                         accept="image/*" 
-                        onChange={(e) => handleImageUpload(e, 'product')} 
+                        onChange={(e) => handleFileUpload(e, 'product')} 
                         className="hidden" 
                         disabled={isUploading}
                       />
                     </label>
                   </div>
                 </div>
-                <Button type="submit" disabled={isSubmittingForm || isUploading} className="col-span-2 bg-primary font-bold uppercase tracking-widest h-12 shadow-lg shadow-primary/20">
-                  {isSubmittingForm ? "Processing..." : (editingId ? "Save Changes" : "Deploy to Catalog")}
+                <Button type="submit" disabled={isSubmittingForm || isUploading} className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {isSubmittingForm ? "Processing..." : (editingId ? "Update Product" : "Archive in Catalog")}
                 </Button>
                 {editingId && (
                   <Button 
@@ -639,7 +638,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         type="file" 
                         multiple 
                         accept="image/*" 
-                        onChange={(e) => handleImageUpload(e, 'new-arrival')} 
+                        onChange={(e) => handleFileUpload(e, 'new-arrival')} 
                         className="hidden" 
                         disabled={isUploading}
                       />
@@ -647,7 +646,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   </div>
                 </div>
                 <Button type="submit" disabled={isSubmittingForm || isUploading} className="col-span-2 bg-[#25D366] hover:bg-[#20BA5A] text-white font-bold uppercase tracking-widest h-12 shadow-lg">
-                  {isSubmittingForm ? "Processing..." : (editingId ? "Update Entry" : "Launch as New Arrival")}
+                  {isSubmittingForm ? "Processing..." : (editingId ? "Update Entry" : "Archive as New Arrival")}
                 </Button>
                 {editingId && (
                   <Button 
@@ -759,7 +758,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         type="file" 
                         multiple 
                         accept="image/*" 
-                        onChange={(e) => handleImageUpload(e, 'project')} 
+                        onChange={(e) => handleFileUpload(e, 'project')} 
                         className="hidden" 
                         disabled={isUploading}
                       />
@@ -851,7 +850,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                       <input 
                         type="file" 
                         accept="image/*" 
-                        onChange={(e) => handleImageUpload(e, 'gallery')} 
+                        onChange={(e) => handleFileUpload(e, 'gallery')} 
                         className="hidden" 
                         disabled={isUploading}
                       />
@@ -859,7 +858,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   </div>
                 </div>
                 <Button type="submit" disabled={isSubmittingForm || isUploading || !newGalleryItem.image} className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
-                  {isSubmittingForm ? "Saving..." : (editingId ? "Update Image" : "Publish to Gallery")}
+                  {isSubmittingForm ? "Processing..." : (editingId ? "Update Item" : "Archive in Gallery")}
                 </Button>
               </form>
             </div>
@@ -918,20 +917,35 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   />
                 </div>
                 <Input 
-                  placeholder="File Size (e.g. 2.4 MB)" 
-                  value={newDownload.fileSize} 
-                  onChange={e => setNewDownload({...newDownload, fileSize: e.target.value})} 
-                  className="bg-white" 
-                />
-                <Input 
-                  placeholder="Download URL" 
-                  value={newDownload.downloadUrl} 
-                  onChange={e => setNewDownload({...newDownload, downloadUrl: e.target.value})} 
-                  required 
-                  className="bg-white" 
-                />
-                <Button type="submit" className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
-                  {editingId ? "Update Resource" : "Add to Downloads"}
+                <div className="col-span-2">
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Resource File</label>
+                  <div className="flex gap-4 items-center">
+                    {newDownload.downloadUrl && (
+                      <div className="flex-1 p-3 bg-blue-50 border border-blue-100 rounded-lg flex items-center gap-2 overflow-hidden">
+                        <FileText size={16} className="text-[#01357D] shrink-0" />
+                        <span className="text-[10px] font-mono text-[#01357D] truncate flex-1">{newDownload.downloadUrl}</span>
+                        <span className="text-[9px] font-bold bg-white px-2 py-0.5 rounded border border-blue-200 text-[#01357D]">{newDownload.fileSize}</span>
+                      </div>
+                    )}
+                    <label className={`h-12 rounded-md border-2 border-dashed border-slate-300 flex items-center justify-center px-6 cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50' : ''} ${newDownload.downloadUrl ? 'w-auto' : 'flex-1'}`}>
+                      {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
+                      <span className="text-[8px] font-bold text-slate-400 uppercase ml-2">{isUploading ? 'Uploading...' : (newDownload.downloadUrl ? 'Change File' : 'Upload Resource File')}</span>
+                      <input type="file" onChange={(e) => handleFileUpload(e, 'download')} className="hidden" disabled={isUploading} />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="col-span-2">
+                  <Input 
+                    placeholder="Download URL (Auto-filled on upload or manual link)" 
+                    value={newDownload.downloadUrl} 
+                    onChange={e => setNewDownload({...newDownload, downloadUrl: e.target.value})} 
+                    required 
+                    className="bg-white text-[10px] font-mono" 
+                  />
+                </div>
+                <Button type="submit" disabled={isSubmittingForm || isUploading} className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {isSubmittingForm ? "Processing..." : (editingId ? "Update Resource" : "Archive in Resources")}
                 </Button>
               </form>
             </div>
