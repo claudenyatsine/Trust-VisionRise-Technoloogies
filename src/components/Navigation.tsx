@@ -11,7 +11,8 @@ import {
   Shield, 
   SquareLibrary, 
   MessageSquare,
-  Info
+  Image as ImageIcon,
+  Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -46,8 +47,8 @@ export function Navigation() {
   const navLinks = [
     { name: "Home", href: "/", icon: Home },
     { name: "Products", href: "/shop#products", icon: Package },
-    { name: "Services", href: "/#services", icon: Shield },
-    { name: "Portfolio", href: "/#portfolio", icon: SquareLibrary },
+    { name: "Gallery", href: "/gallery", icon: ImageIcon },
+    { name: "Resources", href: "/downloads", icon: Download },
     { name: "Contact", href: "/contact", icon: MessageSquare },
   ];
 

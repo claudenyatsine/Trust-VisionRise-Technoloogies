@@ -22,6 +22,23 @@ export interface GalleryImage {
   created_at?: string;
 }
 
+export interface GalleryItem {
+  id: string;
+  title: string;
+  image: string;
+  category: string;
+}
+
+export interface DownloadableFile {
+  id: string;
+  title: string;
+  description: string;
+  fileSize: string;
+  fileType: string;
+  downloadUrl: string;
+  category: string;
+}
+
 interface AdminContextType {
   products: Product[];
   projects: Project[];
@@ -33,6 +50,7 @@ interface AdminContextType {
   updateProduct: (product: Product) => Promise<void>;
   removeProduct: (id: string) => Promise<void>;
   newArrivals: Product[];
+<<<<<<< HEAD
   addNewArrival: (product: Product) => Promise<void>;
   updateNewArrival: (product: Product) => Promise<void>;
   removeNewArrival: (id: string) => Promise<void>;
@@ -40,8 +58,14 @@ interface AdminContextType {
   addProject: (project: Project) => Promise<void>;
   updateProject: (project: Project) => Promise<void>;
   removeProject: (id: string) => Promise<void>;
-  addGalleryImage: (image: GalleryImage) => Promise<void>;
-  removeGalleryImage: (id: string) => Promise<void>;
+  gallery: GalleryItem[];
+  addGalleryItem: (item: GalleryItem) => Promise<void>;
+  updateGalleryItem: (item: GalleryItem) => Promise<void>;
+  removeGalleryItem: (id: string) => Promise<void>;
+  downloads: DownloadableFile[];
+  addDownload: (file: DownloadableFile) => void;
+  updateDownload: (file: DownloadableFile) => void;
+  removeDownload: (id: string) => void;
   refreshData: () => Promise<void>;
 }
 
@@ -51,8 +75,10 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [products, setProducts] = useState<Product[]>([]);
   const [newArrivals, setNewArrivals] = useState<Product[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([]); // Keep for internal use/legacy if needed
+  const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [downloads, setDownloads] = useState<DownloadableFile[]>([]);
 
   const refreshData = async () => {
     try {
@@ -98,19 +124,38 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         .order('created_at', { ascending: false });
 
       if (galleryError) throw galleryError;
+      
+      const mappedGallery: GalleryItem[] = (galleryData || []).map((img: any) => ({
+        id: img.id,
+        title: img.description, // Mapping description to title for the new UI
+        image: img.image_url,   // Mapping image_url to image for the new UI
+        category: img.category || 'Installation'
+      }));
+      
+      setGallery(mappedGallery);
       setGalleryImages(galleryData || []);
     } catch (error: any) {
       console.error("Error refreshing data from Supabase:", error?.message || error);
-      // Fallback to empty arrays or initial state if preferred, 
-      // but here we just ensure we don't crash and maybe keep previous state
     }
   };
 
   useEffect(() => {
     refreshData();
     const adminSession = sessionStorage.getItem("trust_vision_admin");
+    const savedDownloads = localStorage.getItem("trust_vision_downloads");
+    
+    if (savedDownloads) {
+      const parsed = JSON.parse(savedDownloads);
+      if (parsed.length > 0) setDownloads(parsed);
+    }
+    
     if (adminSession === "true") setIsAdmin(true);
   }, []);
+
+  // Sync downloads to localStorage (as fallback since we don't have a table yet)
+  useEffect(() => {
+    localStorage.setItem("trust_vision_downloads", JSON.stringify(downloads));
+  }, [downloads]);
 
   const login = (password: string) => {
     if (password === "12345678") {
@@ -290,13 +335,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await refreshData();
   };
 
-  const addGalleryImage = async (image: GalleryImage) => {
+  // Gallery methods unified to use Supabase
+  const addGalleryItem = async (item: GalleryItem) => {
     const { error } = await supabase
       .from('gallery_images')
       .insert([{ 
-        image_url: image.image_url,
-        description: image.description,
-        category: image.category
+        image_url: item.image,
+        description: item.title,
+        category: item.category
       }]);
     
     if (error) {
@@ -306,7 +352,24 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await refreshData();
   };
 
-  const removeGalleryImage = async (id: string) => {
+  const updateGalleryItem = async (updatedItem: GalleryItem) => {
+    const { error } = await supabase
+      .from('gallery_images')
+      .update({ 
+        image_url: updatedItem.image,
+        description: updatedItem.title,
+        category: updatedItem.category
+      })
+      .eq('id', updatedItem.id);
+
+    if (error) {
+      console.error("Error updating gallery image:", error);
+      throw error;
+    }
+    await refreshData();
+  };
+
+  const removeGalleryItem = async (id: string) => {
     const { error } = await supabase
       .from('gallery_images')
       .delete()
@@ -317,6 +380,19 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       throw error;
     }
     await refreshData();
+  };
+
+  // Downloads methods (using localStorage for now as fallback)
+  const addDownload = (file: DownloadableFile) => {
+    setDownloads((prev) => [...prev, file]);
+  };
+
+  const updateDownload = (updatedFile: DownloadableFile) => {
+    setDownloads((prev) => prev.map((file) => (file.id === updatedFile.id ? updatedFile : file)));
+  };
+
+  const removeDownload = (id: string) => {
+    setDownloads((prev) => prev.filter((file) => file.id !== id));
   };
 
   return (
@@ -339,8 +415,14 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         addProject,
         updateProject,
         removeProject,
-        addGalleryImage,
-        removeGalleryImage,
+        gallery,
+        addGalleryItem,
+        updateGalleryItem,
+        removeGalleryItem,
+        downloads,
+        addDownload,
+        updateDownload,
+        removeDownload,
         refreshData,
       }}
     >

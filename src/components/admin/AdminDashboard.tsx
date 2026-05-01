@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Trash2, Package, LayoutGrid, LogOut, Check, X, Edit2, Sparkles, ArrowRight, Image as ImageIcon, Star } from "lucide-react";
+import { Plus, Trash2, Package, LayoutGrid, LogOut, Check, X, Edit2, Sparkles, ArrowRight, Image as ImageIcon, Star, Download, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -23,11 +23,8 @@ interface AdminDashboardProps {
 
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const { 
-    products, projects, newArrivals,
-    addProduct, updateProduct, removeProduct,
-    addProject, updateProject, removeProject, 
-    addNewArrival, updateNewArrival, removeNewArrival, moveNewArrivalToProducts,
-    galleryImages, addGalleryImage, removeGalleryImage,
+    gallery, addGalleryItem, updateGalleryItem, removeGalleryItem,
+    downloads, addDownload, updateDownload, removeDownload,
     logout 
   } = useAdmin();
   const [activeTab, setActiveTab] = useState("products");
@@ -66,6 +63,25 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
 
   const [showNewCategoryInput, setShowNewCategoryInput] = useState<'product' | 'new-arrival' | null>(null);
   const [customCategory, setCustomCategory] = useState("");
+  
+  // New Gallery Form State
+  const initialGalleryItem = {
+    title: "",
+    image: "",
+    category: "Installation",
+  };
+  const [newGalleryItem, setNewGalleryItem] = useState(initialGalleryItem);
+
+  // New Download Form State
+  const initialDownload = {
+    title: "",
+    description: "",
+    fileSize: "",
+    fileType: "PDF",
+    downloadUrl: "",
+    category: "Manual",
+  };
+  const [newDownload, setNewDownload] = useState(initialDownload);
 
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmittingForm, setIsSubmittingForm] = useState(false);
@@ -110,13 +126,29 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     e.preventDefault();
     setIsSubmittingForm(true);
     try {
-      await addGalleryImage(newGalleryImage);
-      setNewGalleryImage(initialGalleryImage);
+      if (editingId) {
+        await updateGalleryItem({ ...newGalleryItem, id: editingId });
+        setEditingId(null);
+      } else {
+        await addGalleryItem({ ...newGalleryItem, id: Math.random().toString(36).substr(2, 9) });
+      }
+      setNewGalleryItem(initialGalleryItem);
     } catch (error) {
-      console.error("Error submitting gallery image:", error);
+      console.error("Error submitting gallery item:", error);
     } finally {
       setIsSubmittingForm(false);
     }
+  };
+
+  const handleDownloadSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editingId) {
+      updateDownload({ ...newDownload, id: editingId });
+      setEditingId(null);
+    } else {
+      addDownload({ ...newDownload, id: Math.random().toString(36).substr(2, 9) });
+    }
+    setNewDownload(initialDownload);
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'project' | 'new-arrival' | 'gallery') => {
@@ -161,7 +193,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             image: prev.image && !prev.image.startsWith('/images') ? prev.image : publicUrl
           }));
         } else if (type === 'gallery') {
-          setNewGalleryImage(prev => ({ ...prev, image_url: publicUrl }));
+          setNewGalleryItem(prev => ({ ...prev, image: publicUrl }));
         }
       } catch (error) {
         console.error('Error uploading image:', error);
@@ -228,6 +260,18 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setActiveTab("new-arrivals");
   };
 
+  const startEditingGalleryItem = (item: any) => {
+    setNewGalleryItem(item);
+    setEditingId(item.id);
+    setActiveTab("gallery");
+  };
+
+  const startEditingDownload = (item: any) => {
+    setNewDownload(item);
+    setEditingId(item.id);
+    setActiveTab("downloads");
+  };
+
   const categories = Array.from(new Set([
     "CCTV Cameras", "Recording Units", "Smart Home", "Access Control", "Specialized",
     ...products.map(p => p.category),
@@ -240,7 +284,8 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     setNewProduct(initialProduct);
     setNewProject(initialProject);
     setNewNewArrival(initialProduct);
-    setNewGalleryImage(initialGalleryImage);
+    setNewGalleryItem(initialGalleryItem);
+    setNewDownload(initialDownload);
   };
 
   return (
@@ -280,13 +325,18 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </TabsTrigger>
             <TabsTrigger value="gallery" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
               <ImageIcon size={14} />
-              Gallery ({galleryImages.length})
+              Gallery ({gallery.length})
+            </TabsTrigger>
+            <TabsTrigger value="downloads" className="flex-1 gap-2 font-bold uppercase tracking-widest text-[10px]">
+              <Download size={14} />
+              Downloads ({downloads.length})
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <ScrollArea className="flex-1 p-6 min-h-0">
-          <TabsContent value="products" className="m-0 space-y-8">
+        <div className="flex-1 w-full overflow-y-auto custom-scrollbar bg-white">
+          <div className="p-6">
+            <TabsContent value="products" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
                 {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
@@ -462,7 +512,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="new-arrivals" className="m-0 space-y-8">
+          <TabsContent value="new-arrivals" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
                 {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
@@ -557,7 +607,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <Textarea placeholder="Detailed Description" value={newNewArrival.description} onChange={e => setNewNewArrival({...newNewArrival, description: e.target.value})} required className="bg-white" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">New Arrival Images</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">New Arrival Images (First one selected will be profile unless changed)</label>
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-4">
                     {newNewArrival.images?.map((img, idx) => (
                       <div key={idx} className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${newNewArrival.image === img ? 'border-[#01357D] scale-105 shadow-md' : 'border-slate-200'}`}>
@@ -656,7 +706,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="projects" className="m-0 space-y-8">
+          <TabsContent value="projects" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
                 {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
@@ -677,7 +727,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                   <Textarea placeholder="Project Scope/Description" value={newProject.description} onChange={e => setNewProject({...newProject, description: e.target.value})} required className="bg-white" />
                 </div>
                 <div className="col-span-2">
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Project Portfolio Gallery</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Project Portfolio Gallery (First one selected will be profile unless changed)</label>
                   <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 mb-4">
                     {newProject.images?.map((img, idx) => (
                       <div key={idx} className={`relative aspect-square rounded-md overflow-hidden border-2 transition-all ${newProject.image === img ? 'border-[#01357D] scale-105 shadow-md' : 'border-slate-200'}`}>
@@ -762,71 +812,156 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="gallery" className="m-0 space-y-8">
+          <TabsContent value="gallery" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
             <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
               <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
-                <ImageIcon size={16} />
-                Add to Gallery
+                {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
+                {editingId ? "Update Gallery Image" : "Add Image to Gallery (Syncing to Cloud)"}
               </h3>
               <form onSubmit={handleGallerySubmit} className="grid grid-cols-2 gap-4">
+                <Input 
+                  placeholder="Image Title" 
+                  value={newGalleryItem.title} 
+                  onChange={e => setNewGalleryItem({...newGalleryItem, title: e.target.value})} 
+                  required 
+                  className="bg-white" 
+                />
+                <Select value={newGalleryItem.category} onValueChange={(val) => setNewGalleryItem({...newGalleryItem, category: val})}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Installation">Installation</SelectItem>
+                    <SelectItem value="Products">Products</SelectItem>
+                    <SelectItem value="Team">Our Team</SelectItem>
+                    <SelectItem value="Events">Events</SelectItem>
+                  </SelectContent>
+                </Select>
                 <div className="col-span-2">
-                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Upload Image</label>
-                  <label className={`w-full aspect-video rounded-xl border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-white transition-all overflow-hidden ${isUploading ? 'opacity-50' : ''}`}>
-                    {newGalleryImage.image_url ? (
-                      <img src={newGalleryImage.image_url} className="w-full h-full object-cover" />
-                    ) : (
-                      <>
-                        <ImageIcon size={24} className="text-slate-300 mb-2" />
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">Select Installation Image</span>
-                      </>
+                  <label className="block text-[10px] font-bold uppercase tracking-widest text-[#01357D] mb-2">Gallery Image</label>
+                  <div className="flex gap-4 items-center">
+                    {newGalleryItem.image && (
+                      <div className="w-24 h-24 rounded-lg overflow-hidden border">
+                        <img src={newGalleryItem.image} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
                     )}
-                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 'gallery')} disabled={isUploading} />
-                  </label>
+                    <label className={`flex-1 h-24 rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50' : ''}`}>
+                      {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
+                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">{isUploading ? 'Uploading...' : 'Upload Image'}</span>
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={(e) => handleImageUpload(e, 'gallery')} 
+                        className="hidden" 
+                        disabled={isUploading}
+                      />
+                    </label>
+                  </div>
                 </div>
-                
-                <div className="col-span-2 space-y-4">
-                  <Input 
-                    placeholder="Brief description of the installation" 
-                    value={newGalleryImage.description} 
-                    onChange={e => setNewGalleryImage({...newGalleryImage, description: e.target.value})}
-                    required
-                    className="bg-white"
-                  />
-                  
-                  <Select value={newGalleryImage.category} onValueChange={(val) => setNewGalleryImage({...newGalleryImage, category: val})}>
-                    <SelectTrigger className="bg-white">
-                      <SelectValue placeholder="Category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="CCTV">CCTV Installation</SelectItem>
-                      <SelectItem value="SOLAR">Solar System</SelectItem>
-                      <SelectItem value="NETWORKING">Networking</SelectItem>
-                      <SelectItem value="ACCESS">Access Control</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Button type="submit" disabled={isSubmittingForm || isUploading || !newGalleryImage.image_url} className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
-                  {isSubmittingForm ? "Saving..." : "Add to Public Gallery"}
+                <Button type="submit" disabled={isSubmittingForm || isUploading || !newGalleryItem.image} className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {isSubmittingForm ? "Saving..." : (editingId ? "Update Image" : "Publish to Gallery")}
                 </Button>
               </form>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {galleryImages.map((img) => (
-                <div key={img.id} className="relative group aspect-square rounded-xl overflow-hidden border bg-white">
-                  <img src={img.image_url} alt={img.description} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-center items-center p-4 text-center">
-                    <p className="text-white text-[10px] font-bold uppercase mb-2">{img.description}</p>
-                    <Button variant="destructive" size="icon" className="h-8 w-8" onClick={() => removeGalleryImage(img.id!)}>
-                      <Trash2 size={14} />
+              {gallery.map((item) => (
+                <div key={item.id} className="group relative aspect-square rounded-xl overflow-hidden border bg-white">
+                  <img src={item.image} alt={item.title} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                    <p className="text-white font-bold text-[10px] uppercase text-center px-2">{item.title}</p>
+                    <div className="flex gap-2">
+                      <Button size="icon" variant="secondary" className="h-8 w-8" onClick={() => startEditingGalleryItem(item)}>
+                        <Edit2 size={14} />
+                      </Button>
+                      <Button size="icon" variant="destructive" className="h-8 w-8" onClick={() => removeGalleryItem(item.id)}>
+                        <Trash2 size={14} />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="downloads" className="m-0 space-y-8 focus-visible:ring-0 focus-visible:ring-offset-0">
+            <div className="bg-slate-50 p-6 rounded-xl border border-dashed border-slate-300">
+              <h3 className="font-bold text-[#01357D] uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
+                {editingId ? <Edit2 size={16} /> : <Plus size={16} />} 
+                {editingId ? "Update Resource" : "Add Downloadable Resource"}
+              </h3>
+              <form onSubmit={handleDownloadSubmit} className="grid grid-cols-2 gap-4">
+                <Input 
+                  placeholder="Resource Title" 
+                  value={newDownload.title} 
+                  onChange={e => setNewDownload({...newDownload, title: e.target.value})} 
+                  required 
+                  className="bg-white" 
+                />
+                <Select value={newDownload.category} onValueChange={(val) => setNewDownload({...newDownload, category: val})}>
+                  <SelectTrigger className="bg-white">
+                    <SelectValue placeholder="Category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Manual">User Manual</SelectItem>
+                    <SelectItem value="Software">Software/Firmware</SelectItem>
+                    <SelectItem value="Catalog">Catalog/Brochure</SelectItem>
+                    <SelectItem value="Certificate">Certifications</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="col-span-2">
+                  <Input 
+                    placeholder="Brief Description" 
+                    value={newDownload.description} 
+                    onChange={e => setNewDownload({...newDownload, description: e.target.value})} 
+                    className="bg-white" 
+                  />
+                </div>
+                <Input 
+                  placeholder="File Size (e.g. 2.4 MB)" 
+                  value={newDownload.fileSize} 
+                  onChange={e => setNewDownload({...newDownload, fileSize: e.target.value})} 
+                  className="bg-white" 
+                />
+                <Input 
+                  placeholder="Download URL" 
+                  value={newDownload.downloadUrl} 
+                  onChange={e => setNewDownload({...newDownload, downloadUrl: e.target.value})} 
+                  required 
+                  className="bg-white" 
+                />
+                <Button type="submit" className="col-span-2 bg-[#01357D] font-bold uppercase tracking-widest h-12 shadow-lg">
+                  {editingId ? "Update Resource" : "Add to Downloads"}
+                </Button>
+              </form>
+            </div>
+
+            <div className="space-y-3">
+              {downloads.map((file) => (
+                <div key={file.id} className="flex items-center justify-between p-4 bg-white border rounded-lg hover:shadow-md transition-shadow group">
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 bg-slate-100 rounded flex items-center justify-center text-[#01357D]">
+                      <FileText size={20} />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-[#01357D] text-sm">{file.title}</h4>
+                      <p className="text-[10px] text-slate-400 font-mono">{file.category} • {file.fileSize}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" onClick={() => startEditingDownload(file)} className="text-slate-300 hover:text-[#01357D] hover:bg-slate-50">
+                      <Edit2 size={16} />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => removeDownload(file.id)} className="text-slate-300 hover:text-red-500 hover:bg-red-50">
+                      <Trash2 size={18} />
                     </Button>
                   </div>
                 </div>
               ))}
             </div>
           </TabsContent>
-        </ScrollArea>
+          </div>
+        </div>
       </Tabs>
       
       <div className="p-4 border-t bg-slate-50 text-[9px] text-center text-slate-400 uppercase tracking-[0.2em] font-bold">

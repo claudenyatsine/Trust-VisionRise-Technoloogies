@@ -8,14 +8,14 @@ import Image from "next/image";
 import { useState, useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import { X, Maximize2, Search } from "lucide-react";
+import { X, Maximize2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAdmin } from "@/context/AdminContext";
 
 export default function GalleryPage() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const { galleryImages: dbImages } = useAdmin();
+  const { gallery } = useAdmin();
 
   useGSAP(() => {
     gsap.from(".gallery-item", {
@@ -27,10 +27,14 @@ export default function GalleryPage() {
     });
   }, { scope: containerRef });
 
-  // Use DB images if available, otherwise fallback to placeholders filtered for gallery
-  const galleryImages = dbImages.length > 0 
-    ? dbImages.map(img => ({ imageUrl: img.image_url, description: img.description, category: img.category || 'CCTV' }))
-    : PlaceHolderImages.filter(img => img.id.startsWith('portfolio-') || img.id.startsWith('service-')).map(img => ({ imageUrl: img.imageUrl, description: img.description, category: img.id.split('-')[1] }));
+  // Use DB images if available, otherwise fallback to placeholders
+  const displayImages = gallery.length > 0 
+    ? gallery 
+    : PlaceHolderImages.filter(img => img.id.startsWith('portfolio-') || img.id.startsWith('service-')).map(img => ({ 
+        image: img.imageUrl, 
+        title: img.description, 
+        category: img.id.split('-')[1].toUpperCase() 
+      }));
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50">
@@ -48,16 +52,16 @@ export default function GalleryPage() {
           </div>
 
           <div ref={containerRef} className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
-            {galleryImages.map((img, idx) => (
+            {displayImages.map((img, idx) => (
               <div 
                 key={idx} 
                 className="gallery-item relative group cursor-pointer overflow-hidden rounded-2xl bg-white shadow-lg break-inside-avoid transition-all duration-500 hover:shadow-2xl"
-                onClick={() => setSelectedImage(img.imageUrl)}
+                onClick={() => setSelectedImage(img.image)}
               >
                 <div className="relative w-full aspect-auto min-h-[200px]">
                   <Image
-                    src={img.imageUrl}
-                    alt={img.description}
+                    src={img.image}
+                    alt={img.title}
                     width={600}
                     height={400}
                     className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105"
@@ -67,7 +71,7 @@ export default function GalleryPage() {
                       {img.category}
                     </Badge>
                     <p className="text-white font-bold text-sm uppercase tracking-tight">
-                      {img.description}
+                      {img.title}
                     </p>
                   </div>
                   <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
