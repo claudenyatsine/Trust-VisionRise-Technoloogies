@@ -455,9 +455,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         </div>
                       </div>
                     ))}
-                    <label className={`aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
-                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">{isUploading ? 'Uploading...' : 'Add'}</span>
+                    <label className={`relative aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all overflow-hidden group ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      {newProduct.image && !newProduct.image.startsWith('/images') && (
+                        <img src={newProduct.image} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity" />
+                      )}
+                      <div className="relative z-10 flex flex-col items-center">
+                        {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400 group-hover:text-[#01357D]" />}
+                        <span className="text-[8px] font-bold text-slate-400 group-hover:text-[#01357D] uppercase mt-1">{isUploading ? 'Uploading...' : 'Add'}</span>
+                      </div>
                       <input 
                         type="file" 
                         multiple 
@@ -631,9 +636,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         </div>
                       </div>
                     ))}
-                    <label className={`aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
-                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">{isUploading ? 'Uploading...' : 'Add'}</span>
+                    <label className={`relative aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all overflow-hidden group ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      {newNewArrival.image && !newNewArrival.image.startsWith('/images') && (
+                        <img src={newNewArrival.image} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity" />
+                      )}
+                      <div className="relative z-10 flex flex-col items-center">
+                        {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400 group-hover:text-[#01357D]" />}
+                        <span className="text-[8px] font-bold text-slate-400 group-hover:text-[#01357D] uppercase mt-1">{isUploading ? 'Uploading...' : 'Add'}</span>
+                      </div>
                       <input 
                         type="file" 
                         multiple 
@@ -751,9 +761,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         </div>
                       </div>
                     ))}
-                    <label className={`aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                      {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
-                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">{isUploading ? 'Uploading...' : 'Add'}</span>
+                    <label className={`relative aspect-square rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all overflow-hidden group ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      {newProject.image && newProject.image !== "portfolio-warehouse" && (
+                        <img src={newProject.image} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity" />
+                      )}
+                      <div className="relative z-10 flex flex-col items-center">
+                        {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400 group-hover:text-[#01357D]" />}
+                        <span className="text-[8px] font-bold text-slate-400 group-hover:text-[#01357D] uppercase mt-1">{isUploading ? 'Uploading...' : 'Add'}</span>
+                      </div>
                       <input 
                         type="file" 
                         multiple 
@@ -844,9 +859,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
                         <img src={newGalleryItem.image} alt="Preview" className="w-full h-full object-cover" />
                       </div>
                     )}
-                    <label className={`flex-1 h-24 rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-colors ${isUploading ? 'opacity-50' : ''}`}>
-                      {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400" />}
-                      <span className="text-[8px] font-bold text-slate-400 uppercase mt-1">{isUploading ? 'Uploading...' : 'Upload Image'}</span>
+                    <label className={`flex-1 h-24 rounded-md border-2 border-dashed border-slate-300 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 transition-all overflow-hidden group ${isUploading ? 'opacity-50' : ''}`}>
+                      {newGalleryItem.image && (
+                        <img src={newGalleryItem.image} alt="Preview" className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:opacity-40 transition-opacity" />
+                      )}
+                      <div className="relative z-10 flex flex-col items-center">
+                        {isUploading ? <Sparkles size={16} className="animate-spin text-[#01357D]" /> : <Plus size={16} className="text-slate-400 group-hover:text-[#01357D]" />}
+                        <span className="text-[8px] font-bold text-slate-400 group-hover:text-[#01357D] uppercase mt-1">{isUploading ? 'Uploading...' : 'Upload Image'}</span>
+                      </div>
                       <input 
                         type="file" 
                         accept="image/*" 
