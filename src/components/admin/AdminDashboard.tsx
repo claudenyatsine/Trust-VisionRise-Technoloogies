@@ -132,15 +132,22 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
     }
   };
 
-  const handleDownloadSubmit = (e: React.FormEvent) => {
+  const handleDownloadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (editingId) {
-      updateDownload({ ...newDownload, id: editingId });
-      setEditingId(null);
-    } else {
-      addDownload({ ...newDownload, id: Math.random().toString(36).substr(2, 9) });
+    setIsSubmittingForm(true);
+    try {
+      if (editingId) {
+        await updateDownload({ ...newDownload, id: editingId });
+        setEditingId(null);
+      } else {
+        await addDownload({ ...newDownload, id: Math.random().toString(36).substr(2, 9) });
+      }
+      setNewDownload(initialDownload);
+    } catch (error) {
+      console.error("Error submitting download:", error);
+    } finally {
+      setIsSubmittingForm(false);
     }
-    setNewDownload(initialDownload);
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'product' | 'project' | 'new-arrival' | 'gallery' | 'download') => {

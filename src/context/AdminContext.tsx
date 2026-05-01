@@ -127,13 +127,22 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       
       const mappedGallery: GalleryItem[] = (galleryData || []).map((img: any) => ({
         id: img.id,
-        title: img.description, // Mapping description to title for the new UI
-        image: img.image_url,   // Mapping image_url to image for the new UI
+        title: img.description, 
+        image: img.image_url,   
         category: img.category || 'Installation'
       }));
       
       setGallery(mappedGallery);
       setGalleryImages(galleryData || []);
+
+      // Fetch downloads
+      const { data: downloadsData, error: downloadsError } = await supabase
+        .from('downloads')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (downloadsError) throw downloadsError;
+      setDownloads(downloadsData || []);
     } catch (error: any) {
       console.error("Error refreshing data from Supabase:", error?.message || error);
     }
@@ -382,17 +391,63 @@ export const AdminProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     await refreshData();
   };
 
-  // Downloads methods (using localStorage for now as fallback)
-  const addDownload = (file: DownloadableFile) => {
-    setDownloads((prev) => [...prev, file]);
+  // Downloads methods
+  const addDownload = async (file: DownloadableFile) => {
+    try {
+      const { error } = await supabase
+        .from('downloads')
+        .insert([{ 
+          title: file.title,
+          category: file.category,
+          description: file.description,
+          fileSize: file.fileSize,
+          downloadUrl: file.downloadUrl,
+          fileType: file.fileType
+        }]);
+
+      if (error) throw error;
+      await refreshData();
+    } catch (error) {
+      console.error("Error adding download:", error);
+      throw error;
+    }
   };
 
-  const updateDownload = (updatedFile: DownloadableFile) => {
-    setDownloads((prev) => prev.map((file) => (file.id === updatedFile.id ? updatedFile : file)));
+  const updateDownload = async (updatedFile: DownloadableFile) => {
+    try {
+      const { error } = await supabase
+        .from('downloads')
+        .update({ 
+          title: updatedFile.title,
+          category: updatedFile.category,
+          description: updatedFile.description,
+          fileSize: updatedFile.fileSize,
+          downloadUrl: updatedFile.downloadUrl,
+          fileType: updatedFile.fileType
+        })
+        .eq('id', updatedFile.id);
+
+      if (error) throw error;
+      await refreshData();
+    } catch (error) {
+      console.error("Error updating download:", error);
+      throw error;
+    }
   };
 
-  const removeDownload = (id: string) => {
-    setDownloads((prev) => prev.filter((file) => file.id !== id));
+  const removeDownload = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('downloads')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      await refreshData();
+    } catch (error) {
+      console.error("Error removing download:", error);
+      throw error;
+    }
   };
 
   return (
